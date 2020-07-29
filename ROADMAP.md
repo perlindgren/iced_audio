@@ -10,7 +10,14 @@
 * [x] `ReductionMeter` - a meter that displays the reduction of loudness in a signal. It can be either vertical or horizontal. It can also have an optional line showing the average loudness.
 * [x] `PhaseMeter` - a meter that displays the phase correlation of an audio signal. It can be horizontal or vertical.
 * [ ] `Oscilloscope` - displays oscillations of an audio signal in a given time window
+* [ ] `WaveformView` - displays the peak amplitude of a signal over time. It can optionally be zoomed in and out of (like Audacity).
 * [ ] `SpectrumAnalyzer` - displays the amplitude of a range of frequencies from 20hz to 20000hz.
+* [ ] dsp and animation for the `DBMeter`
+* [ ] dsp and animation for the `ReductionMeter`
+* [ ] dsp and animation for the `PhaseMeter`
+* [ ] dsp and animation for the `Oscilloscope`
+* [ ] dsp and animation for the `WaveformView`
+* [ ] dsp and animation for the `SpectrumAnalyzer`
 * [ ] `EnvelopeEditor` - adjustable points connected by lines that represent automation / envelopes / lfo`s. Lines can be straight or curved. Extra points can be added or removed.
 * [ ] `ADSREnvelope` - adjustable points connected by lines that represent an ADSR envelope. Can also have optional delay and hold points. The curve of each line may also optionally be controlled by dragging up and down on that line. This widget may be unnecessary though depending on how `EnvelopeEditor` is implemented.
 
@@ -20,7 +27,6 @@
 * [ ] `Keys` - piano keys that can be clicked with a mouse to play a synthesizer. Velocity is controlled by how low on the key the mouse was clicked at. It can be horizontal or vertical.
 * [ ] `ModWheel` - like VSlider, but the Texture style is that of a mod wheel with optional highlight and shadow layers. Will also have a PitchWheel mode where it will automatically snap to the middle position when the mouse button is released.
 * [ ] `ParEqEditor` - a row of points connected by lines used to control parametric equalizers. These points can also be controlled with the scroll wheel to adjust the Q value.
-* [ ] `WaveformView` - displays the peak amplitude of a signal over time. It can optionally be zoomed in and out of (like Audacity).
 * [ ] `Goniometer` - displays a polar graph representing the stereo phase of an audio signal
 * [ ] `WavetableView` - same as oscilloscope but specifically for rendering single waveforms instead of an audio signal
 * [ ] Extra styles for `HSlider`, `Vslider`, `Knob`, `EnvelopeEditor`, and `ADSREnvelope` that expose an animatable moving dot that displays the modulation that is happening in real time.
