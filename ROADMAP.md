@@ -30,3 +30,4 @@
 * [ ] `Goniometer` - displays a polar graph representing the stereo phase of an audio signal
 * [ ] `WavetableView` - same as oscilloscope but specifically for rendering single waveforms instead of an audio signal
 * [ ] Extra styles for `HSlider`, `Vslider`, `Knob`, `EnvelopeEditor`, and `ADSREnvelope` that expose an animatable moving dot that displays the modulation that is happening in real time.
+* [ ] `ModDragAndDrop` - an area that allows a modulation source to be dragged onto a parameter.
