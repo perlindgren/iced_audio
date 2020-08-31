@@ -15,7 +15,7 @@ pub use crate::native::knob::State;
 pub use crate::style::knob::{
     ArcBipolarNotch, ArcBipolarStyle, ArcNotch, ArcStyle, CircleTickMarkStyle,
     ClassicCircleStyle, ClassicLineStyle, LineTickMarkStyle, ModRangeRingStyle,
-    Style, StyleSheet, TickMarkStyle, ValueRingStyle, TextMarkStyle,
+    Style, StyleSheet, TextMarkStyle, TickMarkStyle, ValueRingStyle,
 };
 
 /// This is an alias of a `crate::native` [`Knob`] with an
@@ -146,7 +146,7 @@ impl<B: Backend> knob::Renderer for Renderer<B> {
                         radius,
                         start_angle,
                         angle_span,
-                        text_marks
+                        text_marks,
                     )
                 } else {
                     Primitive::None
@@ -1046,8 +1046,7 @@ fn draw_text_marks(
     let start_angle = start_angle + std::f32::consts::FRAC_PI_2;
 
     for text_mark in text_marks.group.iter() {
-        let angle = (angle_span * text_mark.position.value())
-            + start_angle;
+        let angle = (angle_span * text_mark.position.value()) + start_angle;
 
         let (dx, dy) = {
             if angle < -0.001 || angle > 0.001 {

@@ -4,12 +4,12 @@
 //! # Installation
 //!
 //! Add `iced` and `iced_audio` as dependencies in your `Cargo.toml`:
-//! ```
+//! ```text
 //! iced = { version = "0.1", features = ["image"] }
 //! iced_audio = "0.4"
 //! ```
 //! Or to use the GitHub version of `iced`:
-//! ```
+//! ```text
 //! iced = { git = "https://github.com/hecrj/iced", features = ["image"] }
 //! iced_audio = { git = "https://github.com/BillyDM/iced_audio", branch="iced_git" }
 //! ```
@@ -237,8 +237,6 @@
 #![forbid(rust_2018_idioms)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-//extern crate simdeez;
-
 pub mod core;
 pub mod graphics;
 pub mod native;
@@ -251,8 +249,8 @@ pub use crate::core::*;
 mod platform {
     #[doc(no_inline)]
     pub use crate::graphics::{
-        db_meter, h_slider, knob, mod_range_input, phase_meter, ramp,
-        reduction_meter, v_slider, xy_pad,
+        db_meter, h_slider, knob, mod_range_input, oscilloscope, phase_meter,
+        ramp, reduction_meter, v_slider, xy_pad,
     };
 
     #[doc(no_inline)]
@@ -263,8 +261,9 @@ mod platform {
     #[doc(no_inline)]
     pub use {
         db_meter::DBMeter, h_slider::HSlider, knob::Knob,
-        mod_range_input::ModRangeInput, phase_meter::PhaseMeter, ramp::Ramp,
-        reduction_meter::ReductionMeter, v_slider::VSlider, xy_pad::XYPad,
+        mod_range_input::ModRangeInput, oscilloscope::Oscilloscope,
+        phase_meter::PhaseMeter, ramp::Ramp, reduction_meter::ReductionMeter,
+        v_slider::VSlider, xy_pad::XYPad,
     };
 }
 

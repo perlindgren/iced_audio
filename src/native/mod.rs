@@ -8,8 +8,10 @@ pub mod v_slider;
 pub mod xy_pad;
 
 pub mod db_meter;
+pub mod oscilloscope;
 pub mod phase_meter;
 pub mod reduction_meter;
+//pub mod rt_wave_view;
 
 #[doc(no_inline)]
 pub use h_slider::HSlider;
@@ -27,6 +29,10 @@ pub use xy_pad::XYPad;
 #[doc(no_inline)]
 pub use db_meter::DBMeter;
 #[doc(no_inline)]
+pub use oscilloscope::Oscilloscope;
+#[doc(no_inline)]
 pub use phase_meter::PhaseMeter;
 #[doc(no_inline)]
 pub use reduction_meter::ReductionMeter;
+//#[doc(no_inline)]
+//pub use rt_wave_view::RtWaveView;

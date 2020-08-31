@@ -12,5 +12,7 @@ pub mod xy_pad;
 pub mod bar_text_marks;
 pub mod bar_tick_marks;
 pub mod db_meter;
+pub mod oscilloscope;
 pub mod phase_meter;
 pub mod reduction_meter;
+pub mod rt_wave_view;

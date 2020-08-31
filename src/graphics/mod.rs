@@ -11,5 +11,7 @@ pub mod v_slider;
 pub mod xy_pad;
 
 pub mod db_meter;
+pub mod oscilloscope;
 pub mod phase_meter;
 pub mod reduction_meter;
+//pub mod rt_wave_view;

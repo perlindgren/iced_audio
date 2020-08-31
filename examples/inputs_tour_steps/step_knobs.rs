@@ -84,9 +84,11 @@ impl Default for KnobStep {
                 db_range.create_param_default(KnobsID::DB),
             ),
 
-            knob_freq_state: knob::State::new(
-                freq_range.create_param(KnobsID::Freq, 1000.0, 1000.0)
-            ),
+            knob_freq_state: knob::State::new(freq_range.create_param(
+                KnobsID::Freq,
+                1000.0,
+                1000.0,
+            )),
 
             knob_style1_state: knob::State::new(
                 float_range.create_param_default(KnobsID::Style1),

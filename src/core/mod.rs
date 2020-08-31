@@ -3,6 +3,7 @@
 //! This module holds basic types that can be reused and re-exported in
 //! different runtime implementations.
 
+pub mod audio_to_gui_stream;
 pub mod math;
 pub mod param;
 pub mod range;

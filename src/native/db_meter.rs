@@ -16,13 +16,15 @@ use iced_native::{
 
 use std::hash::Hash;
 
-use crate::core::{FloatRange, Normal, TextMarkGroup, TickMarkGroup};
+use crate::core::{
+    audio_to_gui_stream, FloatRange, Normal, TextMarkGroup, TickMarkGroup,
+};
 
 static DEFAULT_WIDTH: u16 = 20;
 
 static DEFAULT_PEAK_FALL_RATE: f32 = 0.7;
 static DEFAULT_BAR_FALL_RATE: f32 = 0.475;
-static DEFAULT_PEAK_HOLD_SEC: f32 = 1.75;
+static DEFAULT_PEAK_HOLD_SEC: f32 = 2.0;
 
 /// The orientation of a [`DBMeter`]
 ///
@@ -430,47 +432,45 @@ where
 /// [`Detector`]: trait.Detector.html
 #[derive(Debug, Copy, Clone)]
 pub struct DetectorOutput {
-    /// The value of the meter bar in decibels (usually represents rms/average value).
+    /// The value of the left meter bar in decibels (usually represents rms/average value).
     /// Set this to `None` if there is no update.
-    pub bar_db: Option<f32>,
-    /// The value of the peak line in decibels (usually represents peak value).
+    pub left_bar_db: Option<f32>,
+    /// The value of the left peak line in decibels (usually represents peak value).
     /// Set this to `None` if there is no update.
-    pub peak_db: Option<f32>,
-    /// The number of samples to discard from the ring buffer
-    pub n_samples_to_discard: usize,
+    pub left_peak_db: Option<f32>,
+
+    /// The value of the left meter bar in decibels (usually represents rms/average value).
+    /// Set this to `None` if there is no update.
+    pub right_bar_db: Option<f32>,
+    /// The value of the left peak line in decibels (usually represents peak value).
+    /// Set this to `None` if there is no update.
+    pub right_peak_db: Option<f32>,
 }
 
 impl DetectorOutput {
-    /// Returns an empty `DetectorOutput` with both values set to `None`
+    /// Returns an empty `DetectorOutput` with all values set to `None`
     pub fn empty() -> Self {
         Self {
-            bar_db: None,
-            peak_db: None,
-            n_samples_to_discard: 0,
+            left_bar_db: None,
+            left_peak_db: None,
+            right_bar_db: None,
+            right_peak_db: None,
         }
     }
 }
 
 /// A DSP processor used to calculate the peak and rms/average levels of a stereo signal
 pub trait Detector {
-    /// Called when initialized and when the audio sample rate changes.
+    /// Called when initialized and when the audio sample rate changes
     fn update_sample_rate(&mut self, sample_rate: f32);
 
-    /// Process new samples from the left/mono audio channel
-    ///
-    /// - `s1` and `s2` are slices of a lock-free ring buffer.
-    /// They contain only the active readable data.
-    /// `s1` is the first slice, and `s2` is the second consecutive slice when the data is wrapped around the ring buffer.
-    /// - The length of `s2` may be `0` if all the readable data in the ring buffer is continous (does not wrap around).
-    fn process_left(&mut self, s1: &[f32], s2: &[f32]) -> DetectorOutput;
-
-    /// Process new samples from the right audio channel
-    ///
-    /// - `s1` and `s2` are slices of a lock-free ring buffer.
-    /// They contain only the active readable data.
-    /// `s1` is the first slice, and `s2` is the second consecutive slice when the data is wrapped around the ring buffer.
-    /// - The length of `s2` may be `0` if all the readable data in the ring buffer is continous (does not wrap around).
-    fn process_right(&mut self, s1: &[f32], s2: &[f32]) -> DetectorOutput;
+    /// Process new samples and return the resulting output
+    fn process(
+        &mut self,
+        left_stream: &audio_to_gui_stream::Consumer,
+        right_stream: Option<&audio_to_gui_stream::Consumer>,
+        _delta_gui_time: f32,
+    ) -> DetectorOutput;
 
     /// Clear any buffers / set to 0
     fn clear(&mut self);
@@ -495,8 +495,6 @@ pub struct Animator {
 
     detector: Box<dyn Detector>,
     db_range: FloatRange,
-    left_rb_rx: ringbuf::Consumer<f32>,
-    right_rb_rx: Option<ringbuf::Consumer<f32>>,
 
     left_peak_normal: Normal,
     right_peak_normal: Normal,
@@ -508,15 +506,14 @@ pub struct Animator {
 }
 
 impl Animator {
-    /// Creates a new Animator for a [`DBMeter`]
+    /// Creates a new `Animator` for a [`DBMeter`]
     ///
     /// ## It expects:
     ///
     /// * `detector` - A [`Detector`] that detects peak and rms/average values
     /// * `db_range` - The same db_range that was used to create the [`State`] of the [`DBMeter`]. This is so the output of `detector` can be mapped correctly.
-    /// * `left_rb_rx` - The consumer of the lock-free `RingBuffer` that reads the left channel audio data sent from the audio thread
-    /// * `right_rb_rx` - The consumer of the lock-free `RingBuffer` that reads the right channel audio data sent from the audio thread.
     /// Set to `None` for no right audio channel (mono mode).
+    /// * `sample_rate` - The current sample rate in samples per second
     ///
     /// [`State`]: struct.State.html
     /// [`DBMeter`]: struct.DBMeter.html
@@ -524,8 +521,6 @@ impl Animator {
     pub fn new(
         detector: Box<dyn Detector>,
         db_range: FloatRange,
-        left_rb_rx: ringbuf::Consumer<f32>,
-        right_rb_rx: Option<ringbuf::Consumer<f32>>,
         sample_rate: f32,
     ) -> Self {
         let mut detector = detector;
@@ -538,8 +533,6 @@ impl Animator {
             sample_rate,
             detector,
             db_range,
-            left_rb_rx,
-            right_rb_rx,
             left_peak_normal: Normal::min(),
             right_peak_normal: Normal::min(),
             left_bar_normal: Normal::min(),
@@ -549,9 +542,12 @@ impl Animator {
         }
     }
 
-    /// Sets the audio sample rate
+    /// Sets the audio sample rate in samples per second
     pub fn set_sample_rate(&mut self, sample_rate: f32) {
-        self.detector.update_sample_rate(sample_rate);
+        if self.sample_rate != sample_rate {
+            self.detector.update_sample_rate(sample_rate);
+            self.sample_rate = sample_rate;
+        }
     }
 
     /// Sets the [`Detector`] to use
@@ -622,33 +618,39 @@ impl Animator {
         }
     }
 
-    /// Updates to the next frame. This causes the `RingBuffer` to be polled for new inputs,
-    /// and then the [`State`] of the [`DBMeter`] gets updated accordingly.
+    /// Updates to the next frame.
     ///
-    /// * `delta_time` - the elapsed time since the last frame (since update() was last called)
-    /// * `db_meter` - the [`State`] of the [`DBMeter`] to be animated
+    /// * `delta_gui_time` - The elapsed time since the last frame (since update() was last called)
+    /// * `db_meter` - The [`State`] of the [`DBMeter`] to be animated
+    /// * `left_stream` - The left/mono audio stream. Set this to `None` if there is no audio stream.
+    /// * `right_stream` - The right audio stream. Set this to `None` for a mono audio stream.
     ///
     /// [`State`]: struct.State.html
     /// [`DBMeter`]: struct.DBMeter.html
-    pub fn update(&mut self, delta_time: f32, db_meter: &mut State) {
-        let delta_peak_fall = self.peak_fall_rate * delta_time;
-        let delta_bar_fall = self.bar_fall_rate * delta_time;
-
-        self.left_peak_held_time += delta_time;
-        self.right_peak_held_time += delta_time;
-
+    pub fn update(
+        &mut self,
+        delta_gui_time: f32,
+        db_meter: &mut State,
+        left_stream: Option<&audio_to_gui_stream::Consumer>,
+        right_stream: Option<&audio_to_gui_stream::Consumer>,
+    ) {
         let detector = &mut self.detector;
 
-        let mut left_output = DetectorOutput::empty();
-        self.left_rb_rx.access(|s1: &[f32], s2: &[f32]| {
-            left_output = detector.process_left(s1, s2);
-        });
-        let _ = self.left_rb_rx.discard(left_output.n_samples_to_discard);
+        let delta_peak_fall = self.peak_fall_rate * delta_gui_time as f32;
+        let delta_bar_fall = self.bar_fall_rate * delta_gui_time as f32;
+
+        self.left_peak_held_time += delta_gui_time as f32;
+
+        let mut detector_output = DetectorOutput::empty();
+        if let Some(left_stream) = left_stream {
+            detector_output =
+                detector.process(left_stream, right_stream, delta_gui_time);
+        }
 
         self.left_peak_normal = Self::peak_hold_and_fall(
             delta_peak_fall,
             self.left_peak_normal,
-            left_output.peak_db,
+            detector_output.left_peak_db,
             &self.db_range,
             &mut self.left_peak_held_time,
             self.peak_hold_sec,
@@ -657,24 +659,20 @@ impl Animator {
         self.left_bar_normal = Self::bar_fall(
             delta_bar_fall,
             self.left_bar_normal,
-            left_output.bar_db,
+            detector_output.left_bar_db,
             &self.db_range,
         );
 
         db_meter.set_left(self.left_bar_normal);
         db_meter.set_left_peak(Some(self.left_peak_normal));
 
-        if let Some(right_rb_rx) = &mut self.right_rb_rx {
-            let mut right_output = DetectorOutput::empty();
-            right_rb_rx.access(|s1: &[f32], s2: &[f32]| {
-                right_output = detector.process_right(s1, s2);
-            });
-            let _ = right_rb_rx.discard(right_output.n_samples_to_discard);
+        if let Some(_) = db_meter.right_bar {
+            self.right_peak_held_time += delta_gui_time as f32;
 
             self.right_peak_normal = Self::peak_hold_and_fall(
                 delta_peak_fall,
                 self.right_peak_normal,
-                right_output.peak_db,
+                detector_output.right_peak_db,
                 &self.db_range,
                 &mut self.right_peak_held_time,
                 self.peak_hold_sec,
@@ -683,7 +681,7 @@ impl Animator {
             self.right_bar_normal = Self::bar_fall(
                 delta_bar_fall,
                 self.right_bar_normal,
-                right_output.bar_db,
+                detector_output.right_bar_db,
                 &self.db_range,
             );
 

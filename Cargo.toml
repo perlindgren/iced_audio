@@ -40,3 +40,6 @@ iced = { git = "https://github.com/hecrj/iced", features=["canvas"] }
 iced_native = { git = "https://github.com/hecrj/iced" }
 iced_graphics = { git = "https://github.com/hecrj/iced", features=["canvas"] }
 ringbuf = "0.2"
+bit_mask_ring_buf = "0.5"
+slice_ring_buf = "0.2"
+circular-queue = "0.2"

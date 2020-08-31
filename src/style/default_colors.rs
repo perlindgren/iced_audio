@@ -79,3 +79,11 @@ pub static DB_METER_CLIP_MARKER: Color = Color {
 };
 pub static DB_METER_GAP: Color = Color::from_rgb(0.25, 0.25, 0.25);
 pub static PHASE_METER_CENTER_LINE: Color = Color::from_rgb(0.92, 0.92, 0.92);
+
+pub static OSCILLOSCOPE_BACK: Color = Color::from_rgb(0.0, 0.0, 0.0);
+pub static OSCILLOSCOPE_CENTER_LINE: Color = Color {
+    r: 0.5,
+    g: 0.5,
+    b: 0.5,
+    a: 0.1,
+};
