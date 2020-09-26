@@ -11,7 +11,7 @@ use iced_native::{
 
 use std::hash::Hash;
 
-use crate::core::{Param, Normal};
+use crate::core::{Normal, Param};
 
 static DEFAULT_SIZE: u16 = 10;
 static DEFAULT_SCALAR: f32 = 0.005;

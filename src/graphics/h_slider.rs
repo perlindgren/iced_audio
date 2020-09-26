@@ -270,10 +270,12 @@ fn draw_texture_style(
         if let Some(text_marks) = text_marks {
             if let Some(style) = text_mark_style {
                 bar_text_marks::draw_horizontal_text_marks(
-                    bar_x,
-                    bounds_y,
-                    bar_width,
-                    bounds_height,
+                    &Rectangle {
+                        x: bar_x,
+                        y: bounds_y,
+                        width: bar_width,
+                        height: bounds_height,
+                    },
                     &text_marks,
                     style,
                     false,
@@ -378,10 +380,12 @@ fn draw_classic_style(
         if let Some(text_marks) = text_marks {
             if let Some(style) = text_mark_style {
                 bar_text_marks::draw_horizontal_text_marks(
-                    bar_x,
-                    bounds_y,
-                    bar_width,
-                    bounds_height,
+                    &Rectangle {
+                        x: bar_x,
+                        y: bounds_y,
+                        width: bar_width,
+                        height: bounds_height,
+                    },
                     &text_marks,
                     style,
                     false,
@@ -501,10 +505,12 @@ fn draw_rect_style(
         if let Some(text_marks) = text_marks {
             if let Some(style) = text_mark_style {
                 bar_text_marks::draw_horizontal_text_marks(
-                    bar_x,
-                    bounds_y,
-                    bar_width,
-                    bounds_height,
+                    &Rectangle {
+                        x: bar_x,
+                        y: bounds_y,
+                        width: bar_width,
+                        height: bounds_height,
+                    },
                     &text_marks,
                     style,
                     false,
@@ -618,10 +624,12 @@ fn draw_rect_bipolar_style(
         if let Some(text_marks) = text_marks {
             if let Some(style) = text_mark_style {
                 bar_text_marks::draw_horizontal_text_marks(
-                    bar_x,
-                    bounds_y,
-                    bar_width,
-                    bounds_height,
+                    &Rectangle {
+                        x: bar_x,
+                        y: bounds_y,
+                        width: bar_width,
+                        height: bounds_height,
+                    },
                     &text_marks,
                     style,
                     false,

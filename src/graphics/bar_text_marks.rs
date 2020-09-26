@@ -7,10 +7,7 @@ use iced_graphics::Primitive;
 use iced_native::{HorizontalAlignment, Rectangle, VerticalAlignment};
 
 pub fn draw_vertical_text_marks(
-    bounds_x: f32,
-    bounds_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
+    bounds: &Rectangle,
     text_marks: &TextMarkGroup,
     style: &Style,
     inverse: bool,
@@ -24,20 +21,20 @@ pub fn draw_vertical_text_marks(
     let text_bounds_width = style.bounds_width as f32;
     let text_bounds_height = style.bounds_height as f32;
 
-    let start_y = bounds_y + bounds_height;
+    let start_y = bounds.y + bounds.height;
 
     match style.placement {
         Placement::LeftOrTop => {
             primitives.reserve_exact(text_marks.group.len());
 
-            let start_x = bounds_x - offset;
+            let start_x = bounds.x - offset;
 
             for text_mark in text_marks.group.iter() {
                 let y = if inverse {
-                    (start_y - text_mark.position.scale_inv(bounds_height))
-                        .floor()
+                    (start_y - text_mark.position.scale_inv(bounds.height))
+                        .round()
                 } else {
-                    (start_y - text_mark.position.scale(bounds_height)).floor()
+                    (start_y - text_mark.position.scale(bounds.height)).round()
                 };
 
                 primitives.push(Primitive::Text {
@@ -59,14 +56,14 @@ pub fn draw_vertical_text_marks(
         Placement::RightOrBottom => {
             primitives.reserve_exact(text_marks.group.len());
 
-            let start_x = bounds_x + bounds_width + offset;
+            let start_x = bounds.x + bounds.width + offset;
 
             for text_mark in text_marks.group.iter() {
                 let y = if inverse {
-                    (start_y - text_mark.position.scale_inv(bounds_height))
-                        .floor()
+                    (start_y - text_mark.position.scale_inv(bounds.height))
+                        .round()
                 } else {
-                    (start_y - text_mark.position.scale(bounds_height)).floor()
+                    (start_y - text_mark.position.scale(bounds.height)).round()
                 };
 
                 primitives.push(Primitive::Text {
@@ -88,15 +85,15 @@ pub fn draw_vertical_text_marks(
         Placement::BothSides => {
             primitives.reserve_exact(text_marks.group.len() * 2);
 
-            let left_start_x = bounds_x - offset;
-            let right_start_x = bounds_x + bounds_width + offset;
+            let left_start_x = bounds.x - offset;
+            let right_start_x = bounds.x + bounds.width + offset;
 
             for text_mark in text_marks.group.iter() {
                 let y = if inverse {
-                    (start_y - text_mark.position.scale_inv(bounds_height))
-                        .floor()
+                    (start_y - text_mark.position.scale_inv(bounds.height))
+                        .round()
                 } else {
-                    (start_y - text_mark.position.scale(bounds_height)).floor()
+                    (start_y - text_mark.position.scale(bounds.height)).round()
                 };
 
                 primitives.push(Primitive::Text {
@@ -136,10 +133,7 @@ pub fn draw_vertical_text_marks(
 }
 
 pub fn draw_horizontal_text_marks(
-    bounds_x: f32,
-    bounds_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
+    bounds: &Rectangle,
     text_marks: &TextMarkGroup,
     style: &Style,
     inverse: bool,
@@ -153,20 +147,20 @@ pub fn draw_horizontal_text_marks(
     let text_bounds_width = style.bounds_width as f32;
     let text_bounds_height = style.bounds_height as f32;
 
-    let start_x = bounds_x;
+    let start_x = bounds.x;
 
     match style.placement {
         Placement::LeftOrTop => {
             primitives.reserve_exact(text_marks.group.len());
 
-            let start_y = bounds_y - offset;
+            let start_y = bounds.y - offset;
 
             for text_mark in text_marks.group.iter() {
                 let x = if inverse {
-                    (start_x + text_mark.position.scale_inv(bounds_width))
-                        .floor()
+                    (start_x + text_mark.position.scale_inv(bounds.width))
+                        .round()
                 } else {
-                    (start_x + text_mark.position.scale(bounds_width)).floor()
+                    (start_x + text_mark.position.scale(bounds.width)).round()
                 };
 
                 primitives.push(Primitive::Text {
@@ -188,14 +182,14 @@ pub fn draw_horizontal_text_marks(
         Placement::RightOrBottom => {
             primitives.reserve_exact(text_marks.group.len());
 
-            let start_y = bounds_y + bounds_height + offset;
+            let start_y = bounds.y + bounds.height + offset;
 
             for text_mark in text_marks.group.iter() {
                 let x = if inverse {
-                    (start_x + text_mark.position.scale_inv(bounds_width))
-                        .floor()
+                    (start_x + text_mark.position.scale_inv(bounds.width))
+                        .round()
                 } else {
-                    (start_x + text_mark.position.scale(bounds_width)).floor()
+                    (start_x + text_mark.position.scale(bounds.width)).round()
                 };
 
                 primitives.push(Primitive::Text {
@@ -217,15 +211,15 @@ pub fn draw_horizontal_text_marks(
         Placement::BothSides => {
             primitives.reserve_exact(text_marks.group.len() * 2);
 
-            let top_start_y = bounds_y - offset;
-            let bottom_start_y = bounds_y + bounds_height + offset;
+            let top_start_y = bounds.y - offset;
+            let bottom_start_y = bounds.y + bounds.height + offset;
 
             for text_mark in text_marks.group.iter() {
                 let x = if inverse {
-                    (start_x + text_mark.position.scale_inv(bounds_width))
-                        .floor()
+                    (start_x + text_mark.position.scale_inv(bounds.width))
+                        .round()
                 } else {
-                    (start_x + text_mark.position.scale(bounds_width)).floor()
+                    (start_x + text_mark.position.scale(bounds.width)).round()
                 };
 
                 primitives.push(Primitive::Text {

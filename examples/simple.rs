@@ -26,7 +26,7 @@ pub enum Message {
 }
 
 pub fn main() {
-    App::run(Settings::default());
+    App::run(Settings::default()).unwrap();
 }
 
 pub struct App {
@@ -138,9 +138,8 @@ impl Sandbox for App {
                         self.output_text = format!("{:?}: {:.3}", id, value);
                     }
                     ParamID::KnobFreq => {
-                        let value = self
-                            .freq_range
-                            .to_value(*self.knob_state.normal());
+                        let value =
+                            self.freq_range.to_value(*self.knob_state.normal());
                         self.output_text = format!("{:?}: {:.3}", id, value);
                     }
                     ParamID::XYPadFloatX => {

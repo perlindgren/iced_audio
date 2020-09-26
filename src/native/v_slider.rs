@@ -16,6 +16,7 @@ use crate::core::{
 };
 
 static DEFAULT_WIDTH: u16 = 14;
+static DEFAULT_SCALAR: f32 = 0.98;
 static DEFAULT_MODIFIER_SCALAR: f32 = 0.02;
 
 /// A vertical slider GUI widget that controls a [`Param`]
@@ -31,6 +32,7 @@ where
 {
     state: &'a mut State<ID>,
     on_change: Box<dyn Fn(ID) -> Message>,
+    scalar: f32,
     modifier_scalar: f32,
     modifier_keys: keyboard::ModifiersState,
     width: Length,
@@ -60,6 +62,7 @@ where
         VSlider {
             state,
             on_change: Box::new(on_change),
+            scalar: DEFAULT_SCALAR,
             modifier_scalar: DEFAULT_MODIFIER_SCALAR,
             modifier_keys: keyboard::ModifiersState {
                 control: true,
@@ -109,6 +112,19 @@ where
         modifier_keys: keyboard::ModifiersState,
     ) -> Self {
         self.modifier_keys = modifier_keys;
+        self
+    }
+
+    /// Sets the scalar to use when the user drags the slider per pixel.
+    ///
+    /// For example, a scalar of `0.5` will cause the slider to move half a
+    /// pixel for every pixel the mouse moves.
+    ///
+    /// The default scalar is `0.98`.
+    ///
+    /// [`VSlider`]: struct.VSlider.html
+    pub fn scalar(mut self, scalar: f32) -> Self {
+        self.scalar = scalar;
         self
     }
 
@@ -249,7 +265,8 @@ where
                 mouse::Event::CursorMoved { .. } => {
                     if self.state.is_dragging {
                         let bounds_height = layout.bounds().height;
-                        if bounds_height != 0.0 {
+
+                        if bounds_height > 0.0 {
                             let mut movement_y = (cursor_position.y
                                 - self.state.prev_drag_y)
                                 / bounds_height;
@@ -260,6 +277,8 @@ where
                                 .matches(self.modifier_keys)
                             {
                                 movement_y *= self.modifier_scalar;
+                            } else {
+                                movement_y *= self.scalar;
                             }
 
                             let normal =
@@ -366,6 +385,7 @@ pub trait Renderer: iced_native::Renderer {
     ///   * the bounds of the [`VSlider`]
     ///   * the current cursor position
     ///   * the current normal of the [`VSlider`]
+    ///   * the height of the handle in pixels
     ///   * whether the slider is currently being dragged
     ///   * any tick marks to display
     ///   * any text marks to display

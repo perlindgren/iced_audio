@@ -1,4 +1,4 @@
-use iced::{Column, Element, Length, Row, Text};
+use iced::{Column, Element, Length, Point, Row, Size, Text};
 use iced_native::image;
 
 use iced_audio::{
@@ -328,8 +328,8 @@ impl VSliderStep {
             &mut self.v_slider_rect_bp_state,
             Message::VSliderMoved,
         )
-        .width(Length::from(Length::Units(24)))
-        .style(style::VSliderRectBipolarStyle);
+        .width(Length::from(Length::Units(24)));
+        //.style(style::VSliderRectBipolarStyle);
 
         let v_slider_texture = VSlider::new(
             &mut self.v_slider_texture_state,
@@ -337,12 +337,15 @@ impl VSliderStep {
         )
         .tick_marks(&self.float_tick_marks)
         .text_marks(&self.float_text_marks)
-        // the width of the texture
-        .width(Length::from(Length::Units(20)))
-        .style(style::VSliderTextureStyle(
+        .style(style::VSliderTextureStyle {
             // clone the handle to the loaded texture
-            self.v_slider_texture_handle.clone(),
-        ));
+            handle: self.v_slider_texture_handle.clone(),
+            size: Size {
+                width: 20,
+                height: 38,
+            }, // size of the texture
+            offset: Point::ORIGIN, // offset of the texture
+        });
 
         // push the widgets into rows
         let v_slider_row = Row::new()

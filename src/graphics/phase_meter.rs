@@ -116,10 +116,12 @@ impl<B: Backend> phase_meter::Renderer for Renderer<B> {
                     if let Some(text_marks) = text_marks {
                         if let Some(style) = style_sheet.text_mark_style() {
                             bar_text_marks::draw_horizontal_text_marks(
-                                bar_x,
-                                bounds_y,
-                                bar_width,
-                                bounds_height,
+                                &Rectangle {
+                                    x: bar_x,
+                                    y: bounds_y,
+                                    width: bar_width,
+                                    height: bounds_height,
+                                },
                                 &text_marks,
                                 &style,
                                 false,
@@ -347,10 +349,12 @@ impl<B: Backend> phase_meter::Renderer for Renderer<B> {
                     if let Some(text_marks) = text_marks {
                         if let Some(style) = style_sheet.text_mark_style() {
                             bar_text_marks::draw_vertical_text_marks(
-                                bounds_x,
-                                bar_y,
-                                bounds_width,
-                                bar_height,
+                                &Rectangle {
+                                    x: bounds_x,
+                                    y: bar_y,
+                                    width: bounds_width,
+                                    height: bar_height,
+                                },
                                 &text_marks,
                                 &style,
                                 false,

@@ -1,4 +1,4 @@
-use iced::{button, image, Background, Color, Vector};
+use iced::{button, image, Background, Color, Point, Size, Vector};
 use iced_audio::{
     bar_text_marks, h_slider, knob, mod_range_input, ramp, v_slider, xy_pad,
 };
@@ -142,28 +142,40 @@ impl h_slider::StyleSheet for HSliderRectStyle {
 pub struct VSliderRectStyle;
 impl v_slider::StyleSheet for VSliderRectStyle {
     fn active(&self) -> v_slider::Style {
-        v_slider::Style::Rect(v_slider::RectStyle {
-            back_color: EMPTY_COLOR,
-            back_border_width: 1,
-            back_border_radius: 2,
-            back_border_color: BORDER_COLOR,
-            filled_color: FILLED_COLOR,
-            handle_color: HANDLE_COLOR,
-            handle_height: 4,
-            handle_filled_gap: 1,
-        })
+        v_slider::Style {
+            rail: Some(v_slider::Rail::Rectangle {
+                color: EMPTY_COLOR,
+                border_color: BORDER_COLOR,
+                border_width: 1,
+                border_radius: 2,
+            }),
+            value_fill: Some(v_slider::ValueFill::Unipolar {
+                color: FILLED_COLOR,
+                corner_radius: 2,
+                handle_spacing: 1,
+                width: None,
+                h_offset: 0,
+                from_bottom: true,
+            }),
+            handle_height: 5,
+            handle_bottom: Some(v_slider::HandleLayer::Rectangle {
+                color: HANDLE_COLOR,
+                border_color: Color::TRANSPARENT,
+                border_width: 1,
+                border_radius: 2,
+                width: None,
+                height: None,
+                offset: Point::ORIGIN,
+            }),
+            handle_top: None,
+        }
     }
 
     fn hovered(&self) -> v_slider::Style {
         let active = self.active();
-        if let v_slider::Style::Rect(active) = active {
-            v_slider::Style::Rect(v_slider::RectStyle {
-                filled_color: FILLED_HOVER_COLOR,
-                handle_height: 5,
-                ..active
-            })
-        } else {
-            active
+        v_slider::Style {
+            handle_height: 6,
+            ..active
         }
     }
 
@@ -171,6 +183,7 @@ impl v_slider::StyleSheet for VSliderRectStyle {
         self.hovered()
     }
 
+    /*
     fn mod_range_style(&self) -> Option<v_slider::ModRangeStyle> {
         Some(v_slider::ModRangeStyle {
             width: 0,
@@ -191,6 +204,7 @@ impl v_slider::StyleSheet for VSliderRectStyle {
             },
         })
     }
+    */
 }
 
 // Custom style for the Rect Bipolar HSlider
@@ -234,6 +248,7 @@ impl h_slider::StyleSheet for HSliderRectBipolarStyle {
 
 // Custom style for the Rect Bipolar VSlider
 
+/*
 pub struct VSliderRectBipolarStyle;
 impl v_slider::StyleSheet for VSliderRectBipolarStyle {
     fn active(&self) -> v_slider::Style {
@@ -270,6 +285,7 @@ impl v_slider::StyleSheet for VSliderRectBipolarStyle {
         self.hovered()
     }
 }
+*/
 
 // Custom style for the Texture HSlider
 
@@ -306,9 +322,24 @@ impl h_slider::StyleSheet for HSliderTextureStyle {
             width_tier_2: 1,
             width_tier_3: 1,
 
-            color_tier_1: [0.56, 0.56, 0.56, 0.75].into(),
-            color_tier_2: [0.56, 0.56, 0.56, 0.75].into(),
-            color_tier_3: [0.56, 0.56, 0.56, 0.75].into(),
+            color_tier_1: Color {
+                r: 0.56,
+                g: 0.56,
+                b: 0.56,
+                a: 0.75,
+            },
+            color_tier_2: Color {
+                r: 0.56,
+                g: 0.56,
+                b: 0.56,
+                a: 0.75,
+            },
+            color_tier_3: Color {
+                r: 0.56,
+                g: 0.56,
+                b: 0.56,
+                a: 0.75,
+            },
 
             center_offset: 5,
         })
@@ -329,19 +360,42 @@ impl h_slider::StyleSheet for HSliderTextureStyle {
 
 // Custom style for the Texture VSlider
 
-pub struct VSliderTextureStyle(pub image::Handle);
+pub struct VSliderTextureStyle {
+    pub handle: image::Handle,
+    pub size: Size<u16>,
+    pub offset: Point,
+}
 impl v_slider::StyleSheet for VSliderTextureStyle {
     fn active(&self) -> v_slider::Style {
-        v_slider::Style::Texture(v_slider::TextureStyle {
-            rail_colors: (
-                [0.0, 0.0, 0.0, 0.9].into(),
-                [0.36, 0.36, 0.36, 0.75].into(),
-            ),
-            rail_widths: (1, 2),
-            texture: self.0.clone(),
-            handle_height: 38,
-            texture_padding: None,
-        })
+        v_slider::Style {
+            rail: Some(v_slider::Rail::Classic {
+                colors: (
+                    Color {
+                        r: 0.0,
+                        g: 0.0,
+                        b: 0.0,
+                        a: 0.9,
+                    },
+                    Color {
+                        r: 0.36,
+                        g: 0.36,
+                        b: 0.36,
+                        a: 0.75,
+                    },
+                ),
+                widths: (1, 2),
+                edge_padding: 12,
+            }),
+            value_fill: None,
+            handle_height: self.size.height,
+            handle_bottom: Some(v_slider::HandleLayer::Texture {
+                image_handle: self.handle.clone(),
+                width: Some(self.size.width),
+                height: None,
+                offset: self.offset,
+            }),
+            handle_top: None,
+        }
     }
 
     fn hovered(&self) -> v_slider::Style {
@@ -362,9 +416,24 @@ impl v_slider::StyleSheet for VSliderTextureStyle {
             width_tier_2: 1,
             width_tier_3: 1,
 
-            color_tier_1: [0.56, 0.56, 0.56, 0.75].into(),
-            color_tier_2: [0.56, 0.56, 0.56, 0.75].into(),
-            color_tier_3: [0.56, 0.56, 0.56, 0.75].into(),
+            color_tier_1: Color {
+                r: 0.56,
+                g: 0.56,
+                b: 0.56,
+                a: 0.75,
+            },
+            color_tier_2: Color {
+                r: 0.56,
+                g: 0.56,
+                b: 0.56,
+                a: 0.75,
+            },
+            color_tier_3: Color {
+                r: 0.56,
+                g: 0.56,
+                b: 0.56,
+                a: 0.75,
+            },
 
             center_offset: 5,
         })

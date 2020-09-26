@@ -7,11 +7,13 @@ pub mod math;
 pub mod param;
 pub mod range;
 pub mod text_marks;
+pub mod texture;
 pub mod tick_marks;
 
 pub use param::*;
 pub use range::*;
 pub use text_marks::*;
+pub use texture::*;
 pub use tick_marks::*;
 
 /// An `f32` value that is gauranteed to be constrained to the range of
@@ -138,59 +140,6 @@ impl From<f32> for Normal {
 impl From<Normal> for f32 {
     fn from(normal: Normal) -> f32 {
         normal.value
-    }
-}
-
-/// The texture padding around a bounding rectangle. This is useful when the
-/// texture is larger than the intended bounds of the widget, such as a glowing
-/// button texture or a slider with a drop shadow, etc.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct TexturePadding {
-    /// Padding above the bounding rectangle in pixels
-    pub top: u16,
-    /// Padding below the bounding rectangle in pixels
-    pub bottom: u16,
-    /// Padding to the left of the bounding rectangle in pixels
-    pub left: u16,
-    /// Padding to the right of the bounding rectangle in pixels
-    pub right: u16,
-}
-
-impl Default for TexturePadding {
-    fn default() -> Self {
-        Self {
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-        }
-    }
-}
-
-impl TexturePadding {
-    /// Creates a new `TexturePadding` with `top`, `bottom`, `left`, and `right`
-    /// all set to `padding`.
-    pub fn from_single(padding: u16) -> Self {
-        Self {
-            top: padding,
-            bottom: padding,
-            left: padding,
-            right: padding,
-        }
-    }
-
-    /// Creates a new `TexturePadding`
-    ///
-    /// # Arguments
-    /// * `vertical_pad` - padding for `top` and `bottom`
-    /// * `horizontal_pad` - padding for `left` and `right`
-    pub fn from_v_h(vertical_pad: u16, horizontal_pad: u16) -> Self {
-        Self {
-            top: vertical_pad,
-            bottom: vertical_pad,
-            left: horizontal_pad,
-            right: horizontal_pad,
-        }
     }
 }
 
