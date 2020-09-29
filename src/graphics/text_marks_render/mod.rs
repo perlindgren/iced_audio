@@ -1,14 +1,12 @@
-//! `iced_graphics` renderer for text marks for bar meters
-
-use crate::core::TextMarkGroup;
-use crate::style::bar_text_marks::{Placement, Style};
+use crate::native::text_marks;
+use crate::style::text_marks::{Placement, Style};
 
 use iced_graphics::Primitive;
 use iced_native::{HorizontalAlignment, Rectangle, VerticalAlignment};
 
 pub fn draw_vertical_text_marks(
     bounds: &Rectangle,
-    text_marks: &TextMarkGroup,
+    text_marks: &text_marks::TextMarkGroup,
     style: &Style,
     inverse: bool,
 ) -> Primitive {
@@ -134,7 +132,7 @@ pub fn draw_vertical_text_marks(
 
 pub fn draw_horizontal_text_marks(
     bounds: &Rectangle,
-    text_marks: &TextMarkGroup,
+    text_marks: &text_marks::TextMarkGroup,
     style: &Style,
     inverse: bool,
 ) -> Primitive {

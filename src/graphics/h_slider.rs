@@ -1,9 +1,9 @@
-//! `iced_graphics` renderer for the [`HSlider`] widget
+//! Display an interactive horizontal slider that controls a [`Param`]
 //!
-//! [`HSlider`]: ../native/h_slider/struct.HSlider.html
+//! [`Param`]: ../core/param/trait.Param.html
 
-use crate::core::{ModulationRange, Normal, TextMarkGroup, TickMarkGroup};
-use crate::graphics::bar_text_marks;
+use crate::core::{ModulationRange, Normal};
+use crate::graphics::{text_marks, text_marks_render, tick_marks};
 use crate::native::h_slider;
 use iced_graphics::{Backend, Primitive, Renderer};
 use iced_native::{mouse, Background, Color, Point, Rectangle};
@@ -15,10 +15,12 @@ pub use crate::style::h_slider::{
     TickMarkStyle,
 };
 
-/// This is an alias of a `crate::native` [`HSlider`] with an
-/// `iced_graphics::Renderer`.
+/// A horizontal slider GUI widget that controls a [`Param`]
 ///
-/// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
+/// An [`HSlider`] will try to fill the horizontal space of its container.
+///
+/// [`Param`]: ../../core/param/trait.Param.html
+/// [`HSlider`]: struct.HSlider.html
 pub type HSlider<'a, Message, ID, Backend> =
     h_slider::HSlider<'a, Message, Renderer<Backend>, ID>;
 
@@ -32,8 +34,8 @@ impl<B: Backend> h_slider::Renderer for Renderer<B> {
         normal: Normal,
         is_dragging: bool,
         mod_range: Option<ModulationRange>,
-        tick_marks: Option<&TickMarkGroup>,
-        text_marks: Option<&TextMarkGroup>,
+        tick_marks: Option<&tick_marks::Group>,
+        text_marks: Option<&text_marks::TextMarkGroup>,
         style_sheet: &Self::Style,
     ) -> Self::Output {
         let is_mouse_over = bounds.contains(cursor_position);
@@ -235,10 +237,10 @@ fn draw_texture_style(
     bounds_y: f32,
     bounds_width: f32,
     bounds_height: f32,
-    tick_marks: Option<&TickMarkGroup>,
-    text_marks: Option<&TextMarkGroup>,
+    tick_marks: Option<&tick_marks::Group>,
+    text_marks: Option<&text_marks::TextMarkGroup>,
     tick_mark_style: &Option<TickMarkStyle>,
-    text_mark_style: &Option<crate::style::bar_text_marks::Style>,
+    text_mark_style: &Option<crate::style::text_marks::Style>,
     style: TextureStyle,
     mod_range_line: Primitive,
 ) -> Primitive {
@@ -269,7 +271,7 @@ fn draw_texture_style(
     let text_marks: Primitive = {
         if let Some(text_marks) = text_marks {
             if let Some(style) = text_mark_style {
-                bar_text_marks::draw_horizontal_text_marks(
+                text_marks_render::draw_horizontal_text_marks(
                     &Rectangle {
                         x: bar_x,
                         y: bounds_y,
@@ -345,10 +347,10 @@ fn draw_classic_style(
     bounds_y: f32,
     bounds_width: f32,
     bounds_height: f32,
-    tick_marks: Option<&TickMarkGroup>,
-    text_marks: Option<&TextMarkGroup>,
+    tick_marks: Option<&tick_marks::Group>,
+    text_marks: Option<&text_marks::TextMarkGroup>,
     tick_mark_style: &Option<TickMarkStyle>,
-    text_mark_style: &Option<crate::style::bar_text_marks::Style>,
+    text_mark_style: &Option<crate::style::text_marks::Style>,
     style: &ClassicStyle,
     mod_range_line: Primitive,
 ) -> Primitive {
@@ -379,7 +381,7 @@ fn draw_classic_style(
     let text_marks: Primitive = {
         if let Some(text_marks) = text_marks {
             if let Some(style) = text_mark_style {
-                bar_text_marks::draw_horizontal_text_marks(
+                text_marks_render::draw_horizontal_text_marks(
                     &Rectangle {
                         x: bar_x,
                         y: bounds_y,
@@ -470,10 +472,10 @@ fn draw_rect_style(
     bounds_y: f32,
     bounds_width: f32,
     bounds_height: f32,
-    tick_marks: Option<&TickMarkGroup>,
-    text_marks: Option<&TextMarkGroup>,
+    tick_marks: Option<&tick_marks::Group>,
+    text_marks: Option<&text_marks::TextMarkGroup>,
     tick_mark_style: &Option<TickMarkStyle>,
-    text_mark_style: &Option<crate::style::bar_text_marks::Style>,
+    text_mark_style: &Option<crate::style::text_marks::Style>,
     style: &RectStyle,
     mod_range_line: Primitive,
 ) -> Primitive {
@@ -504,7 +506,7 @@ fn draw_rect_style(
     let text_marks: Primitive = {
         if let Some(text_marks) = text_marks {
             if let Some(style) = text_mark_style {
-                bar_text_marks::draw_horizontal_text_marks(
+                text_marks_render::draw_horizontal_text_marks(
                     &Rectangle {
                         x: bar_x,
                         y: bounds_y,
@@ -589,10 +591,10 @@ fn draw_rect_bipolar_style(
     bounds_y: f32,
     bounds_width: f32,
     bounds_height: f32,
-    tick_marks: Option<&TickMarkGroup>,
-    text_marks: Option<&TextMarkGroup>,
+    tick_marks: Option<&tick_marks::Group>,
+    text_marks: Option<&text_marks::TextMarkGroup>,
     tick_mark_style: &Option<TickMarkStyle>,
-    text_mark_style: &Option<crate::style::bar_text_marks::Style>,
+    text_mark_style: &Option<crate::style::text_marks::Style>,
     style: &RectBipolarStyle,
     mod_range_line: Primitive,
 ) -> Primitive {
@@ -623,7 +625,7 @@ fn draw_rect_bipolar_style(
     let text_marks: Primitive = {
         if let Some(text_marks) = text_marks {
             if let Some(style) = text_mark_style {
-                bar_text_marks::draw_horizontal_text_marks(
+                text_marks_render::draw_horizontal_text_marks(
                     &Rectangle {
                         x: bar_x,
                         y: bounds_y,
@@ -895,101 +897,8 @@ fn draw_tick_marks(
     bounds_x: f32,
     bounds_width: f32,
     bounds_height: f32,
-    tick_marks: &TickMarkGroup,
+    tick_marks: &tick_marks::Group,
     style: &TickMarkStyle,
 ) -> Primitive {
-    let mut primitives: Vec<Primitive> = Vec::new();
-
-    if style.center_offset == 0 {
-        primitives.reserve_exact(tick_marks.len());
-
-        if tick_marks.has_tier_1() {
-            draw_tick_mark_tier_merged(
-                &mut primitives,
-                &tick_marks.tier_1_positions(),
-                style.width_tier_1 as f32,
-                style.length_scale_tier_1,
-                &style.color_tier_1,
-                bounds_x,
-                rail_y,
-                bounds_width,
-                bounds_height,
-            );
-        }
-        if tick_marks.has_tier_2() {
-            draw_tick_mark_tier_merged(
-                &mut primitives,
-                &tick_marks.tier_2_positions(),
-                style.width_tier_2 as f32,
-                style.length_scale_tier_2,
-                &style.color_tier_2,
-                bounds_x,
-                rail_y,
-                bounds_width,
-                bounds_height,
-            );
-        }
-        if tick_marks.has_tier_3() {
-            draw_tick_mark_tier_merged(
-                &mut primitives,
-                &tick_marks.tier_3_positions(),
-                style.width_tier_3 as f32,
-                style.length_scale_tier_3,
-                &style.color_tier_3,
-                bounds_x,
-                rail_y,
-                bounds_width,
-                bounds_height,
-            );
-        }
-    } else {
-        primitives.reserve_exact(tick_marks.len() * 2);
-
-        let center_offset = style.center_offset as f32;
-
-        if tick_marks.has_tier_1() {
-            draw_tick_mark_tier(
-                &mut primitives,
-                &tick_marks.tier_1_positions(),
-                style.width_tier_1 as f32,
-                style.length_scale_tier_1,
-                &style.color_tier_1,
-                bounds_x,
-                rail_y,
-                bounds_width,
-                bounds_height,
-                center_offset,
-            );
-        }
-        if tick_marks.has_tier_2() {
-            draw_tick_mark_tier(
-                &mut primitives,
-                &tick_marks.tier_2_positions(),
-                style.width_tier_2 as f32,
-                style.length_scale_tier_2,
-                &style.color_tier_2,
-                bounds_x,
-                rail_y,
-                bounds_width,
-                bounds_height,
-                center_offset,
-            );
-        }
-        if tick_marks.has_tier_3() {
-            draw_tick_mark_tier(
-                &mut primitives,
-                &tick_marks.tier_3_positions(),
-                style.width_tier_3 as f32,
-                style.length_scale_tier_3,
-                &style.color_tier_3,
-                bounds_x,
-                rail_y,
-                bounds_width,
-                bounds_height,
-                center_offset,
-            );
-        }
-    }
-
-    Primitive::Group { primitives }
+    Primitive::None
 }

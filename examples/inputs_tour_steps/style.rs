@@ -1,6 +1,7 @@
 use iced::{button, image, Background, Color, Point, Size, Vector};
 use iced_audio::{
-    bar_text_marks, h_slider, knob, mod_range_input, ramp, v_slider, xy_pad,
+    h_slider, knob, mod_range_input, ramp, text_marks, tick_marks, v_slider,
+    xy_pad,
 };
 
 pub enum Button {
@@ -63,6 +64,9 @@ pub const FILLED_HOVER_COLOR: Color = Color::from_rgb(
     0x70 as f32 / 255.0,
     0xAD as f32 / 255.0,
 );
+pub const BP_FILLED_COLOR: Color = Color::from_rgb(0.0, 0.605, 0.0);
+pub const BP_FILLED_HOVER_COLOR: Color = Color::from_rgb(0.0, 0.64, 0.0);
+pub const BP_HANDLE_COLOR: Color = Color::from_rgb(0.0, 0.9, 0.0);
 pub const HANDLE_COLOR: Color = Color::from_rgb(
     0x75 as f32 / 255.0,
     0xC2 as f32 / 255.0,
@@ -149,13 +153,17 @@ impl v_slider::StyleSheet for VSliderRectStyle {
                 border_width: 1,
                 border_radius: 2,
             }),
-            value_fill: Some(v_slider::ValueFill::Unipolar {
+            value_fill: Some(v_slider::ValueFill {
                 color: FILLED_COLOR,
-                corner_radius: 2,
-                handle_spacing: 1,
+                border_width: 1,
+                border_radius: 2,
+                border_color: Color::TRANSPARENT,
+                handle_spacing: 2,
                 width: None,
-                h_offset: 0,
+                bipolar: false,
                 from_bottom: true,
+                edge_padding: 0,
+                h_offset: 0,
             }),
             handle_height: 5,
             handle_bottom: Some(v_slider::HandleLayer::Rectangle {
@@ -175,6 +183,18 @@ impl v_slider::StyleSheet for VSliderRectStyle {
         let active = self.active();
         v_slider::Style {
             handle_height: 6,
+            value_fill: Some(v_slider::ValueFill {
+                color: FILLED_HOVER_COLOR,
+                border_width: 1,
+                border_radius: 2,
+                border_color: Color::TRANSPARENT,
+                handle_spacing: 3,
+                width: None,
+                bipolar: false,
+                from_bottom: true,
+                edge_padding: 0,
+                h_offset: 0,
+            }),
             ..active
         }
     }
@@ -183,28 +203,30 @@ impl v_slider::StyleSheet for VSliderRectStyle {
         self.hovered()
     }
 
-    /*
     fn mod_range_style(&self) -> Option<v_slider::ModRangeStyle> {
         Some(v_slider::ModRangeStyle {
-            width: 0,
-            offset: 10,
-            placement: v_slider::ModRangePlacement::Center,
-            empty_color: None,
+            back_color: None,
+            border_width: 1,
+            border_radius: 2,
+            border_color: Color::TRANSPARENT,
             filled_color: Color {
                 r: 0.0,
                 g: 0.7,
                 b: 0.0,
                 a: 0.3,
             },
-            filled_inverse_color: Color {
+            filled_color_inv: Color {
                 r: 0.0,
                 g: 0.7,
                 b: 0.0,
-                a: 0.5,
+                a: 0.3,
             },
+            width: None,
+            placement: v_slider::ModRangePlacement::Center,
+            edge_padding: 0,
+            offset: Point::ORIGIN,
         })
     }
-    */
 }
 
 // Custom style for the Rect Bipolar HSlider
@@ -248,36 +270,59 @@ impl h_slider::StyleSheet for HSliderRectBipolarStyle {
 
 // Custom style for the Rect Bipolar VSlider
 
-/*
 pub struct VSliderRectBipolarStyle;
 impl v_slider::StyleSheet for VSliderRectBipolarStyle {
     fn active(&self) -> v_slider::Style {
-        v_slider::Style::RectBipolar(v_slider::RectBipolarStyle {
-            back_color: EMPTY_COLOR,
-            back_border_width: 1,
-            back_border_radius: 2,
-            back_border_color: BORDER_COLOR,
-            bottom_filled_color: FILLED_COLOR,
-            top_filled_color: Color::from_rgb(0.0, 0.605, 0.0),
-            handle_bottom_color: HANDLE_COLOR,
-            handle_top_color: Color::from_rgb(0.0, 0.9, 0.0),
-            handle_center_color: Color::from_rgb(0.7, 0.7, 0.7),
-            handle_height: 4,
-            handle_filled_gap: 1,
-        })
+        v_slider::Style {
+            rail: Some(v_slider::Rail::Rectangle {
+                color: EMPTY_COLOR,
+                border_color: BORDER_COLOR,
+                border_width: 1,
+                border_radius: 2,
+            }),
+            value_fill: Some(v_slider::ValueFill {
+                color: BP_FILLED_COLOR,
+                border_width: 1,
+                border_radius: 2,
+                border_color: Color::TRANSPARENT,
+                handle_spacing: 2,
+                width: None,
+                bipolar: true,
+                from_bottom: true,
+                edge_padding: 0,
+                h_offset: 0,
+            }),
+            handle_height: 5,
+            handle_bottom: Some(v_slider::HandleLayer::Rectangle {
+                color: BP_HANDLE_COLOR,
+                border_color: Color::TRANSPARENT,
+                border_width: 1,
+                border_radius: 2,
+                width: None,
+                height: None,
+                offset: Point::ORIGIN,
+            }),
+            handle_top: None,
+        }
     }
 
     fn hovered(&self) -> v_slider::Style {
         let active = self.active();
-        if let v_slider::Style::RectBipolar(active) = active {
-            v_slider::Style::RectBipolar(v_slider::RectBipolarStyle {
-                bottom_filled_color: FILLED_HOVER_COLOR,
-                top_filled_color: Color::from_rgb(0.0, 0.64, 0.0),
-                handle_height: 5,
-                ..active
-            })
-        } else {
-            active
+        v_slider::Style {
+            handle_height: 6,
+            value_fill: Some(v_slider::ValueFill {
+                color: BP_FILLED_HOVER_COLOR,
+                border_width: 1,
+                border_radius: 2,
+                border_color: Color::TRANSPARENT,
+                handle_spacing: 3,
+                width: None,
+                bipolar: true,
+                from_bottom: true,
+                edge_padding: 0,
+                h_offset: 0,
+            }),
+            ..active
         }
     }
 
@@ -285,7 +330,6 @@ impl v_slider::StyleSheet for VSliderRectBipolarStyle {
         self.hovered()
     }
 }
-*/
 
 // Custom style for the Texture HSlider
 
@@ -345,15 +389,15 @@ impl h_slider::StyleSheet for HSliderTextureStyle {
         })
     }
 
-    fn text_mark_style(&self) -> Option<bar_text_marks::Style> {
-        Some(bar_text_marks::Style {
+    fn text_mark_style(&self) -> Option<text_marks::Style> {
+        Some(text_marks::Style {
             color: [0.16, 0.16, 0.16, 0.9].into(),
             offset: 5,
             text_size: 12,
             font: Default::default(),
             bounds_width: 30,
             bounds_height: 14,
-            placement: bar_text_marks::Placement::RightOrBottom,
+            placement: text_marks::Placement::RightOrBottom,
         })
     }
 }
@@ -406,48 +450,58 @@ impl v_slider::StyleSheet for VSliderTextureStyle {
         self.active()
     }
 
-    fn tick_mark_style(&self) -> Option<v_slider::TickMarkStyle> {
-        Some(v_slider::TickMarkStyle {
-            length_scale_tier_1: 0.85,
-            length_scale_tier_2: 0.8,
-            length_scale_tier_3: 0.75,
-
-            width_tier_1: 2,
-            width_tier_2: 1,
-            width_tier_3: 1,
-
-            color_tier_1: Color {
-                r: 0.56,
-                g: 0.56,
-                b: 0.56,
-                a: 0.75,
+    fn tick_mark_style(
+        &self,
+    ) -> Option<(tick_marks::Style, tick_marks::Placement)> {
+        Some((
+            tick_marks::Style {
+                tier_1: Some(tick_marks::Shape::Line {
+                    length: 4,
+                    width: 2,
+                    color: Color {
+                        r: 0.56,
+                        g: 0.56,
+                        b: 0.56,
+                        a: 0.75,
+                    },
+                }),
+                tier_2: Some(tick_marks::Shape::Line {
+                    length: 3,
+                    width: 2,
+                    color: Color {
+                        r: 0.56,
+                        g: 0.56,
+                        b: 0.56,
+                        a: 0.75,
+                    },
+                }),
+                tier_3: Some(tick_marks::Shape::Line {
+                    length: 2,
+                    width: 1,
+                    color: Color {
+                        r: 0.56,
+                        g: 0.56,
+                        b: 0.56,
+                        a: 0.75,
+                    },
+                }),
             },
-            color_tier_2: Color {
-                r: 0.56,
-                g: 0.56,
-                b: 0.56,
-                a: 0.75,
+            tick_marks::Placement::BothSides {
+                inside: false,
+                offset: 4,
             },
-            color_tier_3: Color {
-                r: 0.56,
-                g: 0.56,
-                b: 0.56,
-                a: 0.75,
-            },
-
-            center_offset: 5,
-        })
+        ))
     }
 
-    fn text_mark_style(&self) -> Option<bar_text_marks::Style> {
-        Some(bar_text_marks::Style {
+    fn text_mark_style(&self) -> Option<text_marks::Style> {
+        Some(text_marks::Style {
             color: [0.16, 0.16, 0.16, 0.9].into(),
             offset: 5,
             text_size: 12,
             font: Default::default(),
             bounds_width: 30,
             bounds_height: 14,
-            placement: bar_text_marks::Placement::LeftOrTop,
+            placement: text_marks::Placement::LeftOrTop,
         })
     }
 }

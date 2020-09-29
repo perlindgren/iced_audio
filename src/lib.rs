@@ -251,20 +251,14 @@ pub use crate::core::*;
 mod platform {
     #[doc(no_inline)]
     pub use crate::graphics::{
-        db_meter, h_slider, knob, mod_range_input, phase_meter, ramp,
-        reduction_meter, v_slider, xy_pad,
+        h_slider, knob, mod_range_input, ramp, text_marks, tick_marks,
+        v_slider, xy_pad,
     };
 
     #[doc(no_inline)]
-    pub use crate::style::bar_text_marks;
-    #[doc(no_inline)]
-    pub use crate::style::bar_tick_marks;
-
-    #[doc(no_inline)]
     pub use {
-        db_meter::DBMeter, h_slider::HSlider, knob::Knob,
-        mod_range_input::ModRangeInput, phase_meter::PhaseMeter, ramp::Ramp,
-        reduction_meter::ReductionMeter, v_slider::VSlider, xy_pad::XYPad,
+        h_slider::HSlider, knob::Knob, mod_range_input::ModRangeInput,
+        ramp::Ramp, v_slider::VSlider, xy_pad::XYPad,
     };
 }
 

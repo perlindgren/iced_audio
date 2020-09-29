@@ -1,8 +1,9 @@
-//! `iced_graphics` renderer for the [`Knob`] widget
+//! Display an interactive rotating knob that controls a [`Param`]
 //!
-//! [`Knob`]: ../native/knob/struct.Knob.html
+//! [`Param`]: ../core/param/struct.Param.html
 
-use crate::core::{ModulationRange, Normal, TextMarkGroup, TickMarkGroup};
+use crate::core::{ModulationRange, Normal};
+use crate::graphics::{text_marks, tick_marks};
 use crate::native::knob;
 use iced_graphics::canvas::{path::Arc, Frame, LineCap, Path, Stroke};
 use iced_graphics::{Backend, Primitive, Renderer};
@@ -18,10 +19,9 @@ pub use crate::style::knob::{
     Style, StyleSheet, TextMarkStyle, TickMarkStyle, ValueRingStyle,
 };
 
-/// This is an alias of a `crate::native` [`Knob`] with an
-/// `iced_graphics::Renderer`.
+/// A rotating knob GUI widget that controls a [`Param`]
 ///
-/// [`Knob`]: ../../native/knob/struct.Knob.html
+/// [`Param`]: ../../core/param/struct.Param.html
 pub type Knob<'a, Message, ID, Backend> =
     knob::Knob<'a, Message, Renderer<Backend>, ID>;
 
@@ -35,8 +35,8 @@ impl<B: Backend> knob::Renderer for Renderer<B> {
         normal: Normal,
         is_dragging: bool,
         mod_range: Option<ModulationRange>,
-        tick_marks: Option<&TickMarkGroup>,
-        text_marks: Option<&TextMarkGroup>,
+        tick_marks: Option<&tick_marks::Group>,
+        text_marks: Option<&text_marks::TextMarkGroup>,
         style_sheet: &Self::Style,
     ) -> Self::Output {
         let is_mouse_over = bounds.contains(cursor_position);
@@ -851,9 +851,10 @@ fn draw_circle_tick_marks(
     radius: f32,
     bounds_x: f32,
     bounds_y: f32,
-    tick_marks: &TickMarkGroup,
+    tick_marks: &tick_marks::Group,
     style: &CircleTickMarkStyle,
 ) -> Primitive {
+    /*
     let start_angle = start_angle + std::f32::consts::FRAC_PI_2;
 
     let mut primitives: Vec<Primitive> = Vec::new();
@@ -905,6 +906,9 @@ fn draw_circle_tick_marks(
     }
 
     Primitive::Group { primitives }
+    */
+
+    Primitive::None
 }
 
 fn draw_line_tick_marks(
@@ -913,9 +917,10 @@ fn draw_line_tick_marks(
     radius: f32,
     bounds_x: f32,
     bounds_y: f32,
-    tick_marks: &TickMarkGroup,
+    tick_marks: &tick_marks::Group,
     style: &LineTickMarkStyle,
 ) -> Primitive {
+    /*
     let start_angle = start_angle - std::f32::consts::FRAC_PI_2;
 
     let tick_mark_offset = radius + style.offset;
@@ -1019,6 +1024,9 @@ fn draw_line_tick_marks(
         ),
         content: Box::new(frame.into_geometry().into_primitive()),
     }
+    */
+
+    Primitive::None
 }
 
 fn draw_text_marks(
@@ -1028,7 +1036,7 @@ fn draw_text_marks(
     radius: f32,
     start_angle: f32,
     angle_span: f32,
-    text_marks: &TextMarkGroup,
+    text_marks: &text_marks::TextMarkGroup,
 ) -> Primitive {
     let mut primitives: Vec<Primitive> = Vec::new();
 

@@ -1,6 +1,7 @@
-//! `iced_graphics` renderer for the [`Ramp`] widget
+//! Display a ramp control that controls a [`Param`]. It is usually used to
+//! represent the easing of a parameter between two points in time.
 //!
-//! [`Ramp`]: ../native/ramp/struct.Ramp.html
+//! [`Param`]: ../core/param/trait.Param.html
 
 use crate::core::Normal;
 use crate::native::ramp;
@@ -11,10 +12,11 @@ use iced_native::{mouse, Background, Point, Rectangle, Size, Vector};
 pub use crate::native::ramp::{RampDirection, State};
 pub use crate::style::ramp::{Style, StyleSheet};
 
-/// This is an alias of a `crate::native` [`Ramp`] with an
-/// `iced_graphics::Renderer`.
+/// A ramp GUI widget that controls a [`Param`]. It is usually used to
+/// represent the easing of a parameter between two points in time.
 ///
-/// [`Ramp`]: ../../native/ramp/struct.Ramp.html
+/// [`Param`]: ../../core/param/trait.Param.html
+/// [`Ramp`]: struct.Ramp.html
 pub type Ramp<'a, Message, ID, Backend> =
     ramp::Ramp<'a, Message, Renderer<Backend>, ID>;
 

@@ -6,15 +6,11 @@
 pub mod math;
 pub mod param;
 pub mod range;
-pub mod text_marks;
 pub mod texture;
-pub mod tick_marks;
 
 pub use param::*;
 pub use range::*;
-pub use text_marks::*;
 pub use texture::*;
-pub use tick_marks::*;
 
 /// An `f32` value that is gauranteed to be constrained to the range of
 ///

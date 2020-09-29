@@ -1,8 +1,8 @@
 use iced::{Column, Element, Length, Row, Text};
 
 use iced_audio::{
-    knob, FloatRange, FreqRange, IntRange, Knob, LogDBRange, TextMark,
-    TextMarkGroup, TickMark, TickMarkGroup, TickMarkTier,
+    knob, text_marks, tick_marks, FloatRange, FreqRange, IntRange, Knob,
+    LogDBRange,
 };
 
 use crate::{style, Step};
@@ -41,15 +41,15 @@ pub struct KnobStep {
     knob_style3_state: knob::State<KnobsID>,
     knob_style4_state: knob::State<KnobsID>,
 
-    float_tick_marks: TickMarkGroup,
-    int_tick_marks: TickMarkGroup,
-    db_tick_marks: TickMarkGroup,
-    freq_tick_marks: TickMarkGroup,
+    float_tick_marks: tick_marks::Group,
+    int_tick_marks: tick_marks::Group,
+    db_tick_marks: tick_marks::Group,
+    freq_tick_marks: tick_marks::Group,
 
-    float_text_marks: TextMarkGroup,
-    int_text_marks: TextMarkGroup,
-    db_text_marks: TextMarkGroup,
-    freq_text_marks: TextMarkGroup,
+    float_text_marks: text_marks::TextMarkGroup,
+    int_text_marks: text_marks::TextMarkGroup,
+    db_text_marks: text_marks::TextMarkGroup,
+    freq_text_marks: text_marks::TextMarkGroup,
 
     output_text: String,
 }
@@ -106,110 +106,58 @@ impl Default for KnobStep {
                 float_range.create_param_default(KnobsID::Style4),
             ),
 
-            float_tick_marks: TickMarkGroup::subdivided(
+            float_tick_marks: tick_marks::Group::subdivided(
                 1,
                 1,
                 1,
-                Some(TickMarkTier::Two),
+                Some(tick_marks::Tier::Two),
             ),
 
-            int_tick_marks: TickMarkGroup::evenly_spaced(6, TickMarkTier::Two),
+            int_tick_marks: tick_marks::Group::evenly_spaced(
+                6,
+                tick_marks::Tier::Two,
+            ),
 
             db_tick_marks: vec![
-                TickMark {
-                    position: db_range.to_normal(0.0),
-                    tier: TickMarkTier::One,
-                },
-                TickMark {
-                    position: db_range.to_normal(1.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: db_range.to_normal(3.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: db_range.to_normal(6.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: db_range.to_normal(12.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: db_range.to_normal(-1.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: db_range.to_normal(-3.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: db_range.to_normal(-6.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: db_range.to_normal(-12.0),
-                    tier: TickMarkTier::Two,
-                },
+                (db_range.to_normal(0.0), tick_marks::Tier::One),
+                (db_range.to_normal(1.0), tick_marks::Tier::Two),
+                (db_range.to_normal(3.0), tick_marks::Tier::Two),
+                (db_range.to_normal(6.0), tick_marks::Tier::Two),
+                (db_range.to_normal(12.0), tick_marks::Tier::Two),
+                (db_range.to_normal(-1.0), tick_marks::Tier::Two),
+                (db_range.to_normal(-3.0), tick_marks::Tier::Two),
+                (db_range.to_normal(-6.0), tick_marks::Tier::Two),
+                (db_range.to_normal(-12.0), tick_marks::Tier::Two),
             ]
             .into(),
 
             freq_tick_marks: vec![
-                TickMark {
-                    position: freq_range.to_normal(20.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(50.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(100.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(200.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(400.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(1000.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(2000.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(5000.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(10000.0),
-                    tier: TickMarkTier::Two,
-                },
-                TickMark {
-                    position: freq_range.to_normal(20000.0),
-                    tier: TickMarkTier::Two,
-                },
+                (freq_range.to_normal(20.0), tick_marks::Tier::Two),
+                (freq_range.to_normal(50.0), tick_marks::Tier::Two),
+                (freq_range.to_normal(100.0), tick_marks::Tier::One),
+                (freq_range.to_normal(200.0), tick_marks::Tier::Two),
+                (freq_range.to_normal(400.0), tick_marks::Tier::Two),
+                (freq_range.to_normal(1000.0), tick_marks::Tier::One),
+                (freq_range.to_normal(2000.0), tick_marks::Tier::Two),
+                (freq_range.to_normal(5000.0), tick_marks::Tier::Two),
+                (freq_range.to_normal(10000.0), tick_marks::Tier::One),
+                (freq_range.to_normal(20000.0), tick_marks::Tier::Two),
             ]
             .into(),
 
-            float_text_marks: TextMarkGroup::min_max_and_center(
+            float_text_marks: text_marks::TextMarkGroup::min_max_and_center(
                 "-1", "+1", "0",
             ),
-            int_text_marks: TextMarkGroup::evenly_spaced(vec![
+            int_text_marks: text_marks::TextMarkGroup::evenly_spaced(vec![
                 "A", "B", "C", "D", "E", "F",
             ]),
-            db_text_marks: TextMarkGroup::min_max_and_center("-12", "+12", "0"),
-            freq_text_marks: TextMarkGroup::new(vec![
-                TextMark::new("100", freq_range.to_normal(100.0)),
-                TextMark::new("1k", freq_range.to_normal(1000.0)),
-                TextMark::new("10k", freq_range.to_normal(10000.0)),
+            db_text_marks: text_marks::TextMarkGroup::min_max_and_center(
+                "-12", "+12", "0",
+            ),
+            freq_text_marks: text_marks::TextMarkGroup::new(vec![
+                text_marks::TextMark::new("100", freq_range.to_normal(100.0)),
+                text_marks::TextMark::new("1k", freq_range.to_normal(1000.0)),
+                text_marks::TextMark::new("10k", freq_range.to_normal(10000.0)),
             ]),
 
             output_text: String::from("Move a widget"),

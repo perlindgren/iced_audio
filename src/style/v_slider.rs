@@ -5,7 +5,7 @@
 use iced::Color;
 use iced_native::{image, Point};
 
-use crate::style::{bar_text_marks, default_colors};
+use crate::style::{default_colors, text_marks, tick_marks};
 
 /// The appearance of a [`VSlider`].
 ///
@@ -39,11 +39,6 @@ pub enum Rail {
         /// the widget in pixels.
         edge_padding: u16,
     },
-    /// Textured rail
-    Texture {
-        /// The image texture.
-        texture: image::Handle,
-    },
     /// A background rectangle
     Rectangle {
         /// * Color of the rectangle.
@@ -55,48 +50,53 @@ pub enum Rail {
         /// * Radius of the corners.
         border_radius: u16,
     },
+    /// Textured rail
+    Texture {
+        /// The image handle.
+        image_handle: image::Handle,
+        /// Width of the texture in pixels. Set to `None` to use the
+        /// width of the widget.
+        width: Option<u16>,
+        /// Height of the texture in pixels. Set to `None` to use the
+        /// height of the widget.
+        height: Option<u16>,
+        /// The spacing from the ends of the rail to the top and bottom of
+        /// the widget in pixels. This is only effective when `height` is `None`.
+        edge_padding: u16,
+        /// Offset of the texture in pixels.
+        offset: Point,
+    },
 }
 
 /// The appearance of a value fill rectangle in a [`VSlider`].
 ///
 /// [`VSlider`]: ../../native/v_slider/struct.VSlider.html
 #[derive(Debug, Clone)]
-pub enum ValueFill {
-    /// Unipolar value fill
-    Unipolar {
-        /// Color of the value fill rectangle.
-        color: Color,
-        /// Radius of the corners
-        corner_radius: u16,
-        /// The spacing in pixels between the edge of the handle
-        /// and the value fill rectangle.
-        handle_spacing: u16,
-        /// The width (thickness) of the value fill rectangle. Set to
-        /// `None` to use the full width of the widget.
-        width: Option<u16>,
-        /// The horizontal offset of the value fill rectangle in pixels.
-        h_offset: u16,
-        /// Whether the value should start from the bottom (true), or
-        /// from the top (false).
-        from_bottom: bool,
-    },
-    /// Bipolar value fill
-    Bipolar {
-        /// Color of the value fill rectangle in the bottom position.
-        bottom_color: Color,
-        /// Color of the value fill rectangle in the top position.
-        top_color: Color,
-        /// Radius of the corners
-        corner_radius: u16,
-        /// The spacing in pixels between the edge of the handle
-        /// and the value fill rectangle.
-        handle_spacing: u16,
-        /// The width (thickness) of the value fill rectangle. Set to
-        /// `None` to use the full width of the widget.
-        width: Option<u16>,
-        /// The horizontal offset of the value fill rectangle in pixels.
-        h_offset: u16,
-    },
+pub struct ValueFill {
+    /// Color of the value fill rectangle.
+    pub color: Color,
+    /// Width of the border.
+    pub border_width: u16,
+    /// Radius of the corners
+    pub border_radius: u16,
+    /// Color of the border.
+    pub border_color: Color,
+    /// The spacing in pixels between the center of the handle
+    /// and the value fill rectangle.
+    pub handle_spacing: u16,
+    /// The width (thickness) of the value fill rectangle. Set to
+    /// `None` to use the full width of the widget.
+    pub width: Option<u16>,
+    /// Whether the start from the middle (true), or one of the edges (false).
+    pub bipolar: bool,
+    /// Whether the value should start from the bottom (true), or
+    /// from the top (false). Only effective when `bipolar` is false.
+    pub from_bottom: bool,
+    /// The spacing from the end of the value fill to the top or bottom of
+    /// the widget in pixels. This is only effective when `bipolar` is false.
+    pub edge_padding: u16,
+    /// The horizontal offset of the value fill rectangle in pixels.
+    pub h_offset: u16,
 }
 
 /// The appearance of a handle layer in a [`VSlider`].
@@ -153,65 +153,11 @@ pub enum HandleLayer {
     // TODO: Triangle and hexagon.
 }
 
-/// The appearance of a [`TickMarkGroup`] in a [`VSlider`]
-///
-/// [`TickMarkGroup`]: ../../core/tick_marks/struct.TickMarkGroup.html
-/// [`VSlider`]: ../../native/v_slider/struct.VSlider.html
-#[derive(Debug, Copy, Clone)]
-pub struct TickMarkStyle {
-    /// The length of a tier 1 tick mark relative to the length of the `VSlider` in pixels.
-    pub length_scale_tier_1: f32,
-    /// The length of a tier 2 tick mark relative to the length of the `VSlider` in pixels.
-    pub length_scale_tier_2: f32,
-    /// The length of a tier 3 tick mark relative to the length of the `VSlider` in pixels.
-    pub length_scale_tier_3: f32,
-
-    /// The width (thickness) of a tier 1 tick mark in pixels.
-    pub width_tier_1: u16,
-    /// The width (thickness) of a tier 2 tick mark in pixels.
-    pub width_tier_2: u16,
-    /// The width (thickness) of a tier 3 tick mark in pixels.
-    pub width_tier_3: u16,
-
-    /// The color of a tier 1 tick mark.
-    pub color_tier_1: Color,
-    /// The color of a tier 2 tick mark.
-    pub color_tier_2: Color,
-    /// The color of a tier 3 tick mark.
-    pub color_tier_3: Color,
-
-    /// The vertical distance from the center rail to a tick mark in pixels. Setting this
-    /// to `0` will cause each tick mark to be a single continous line going
-    /// through the the rail, as apposed to a line above and a line below the
-    /// rail.
-    pub center_offset: u16,
-}
-
-impl std::default::Default for TickMarkStyle {
-    fn default() -> Self {
-        Self {
-            length_scale_tier_1: 1.65,
-            length_scale_tier_2: 1.55,
-            length_scale_tier_3: 1.4,
-
-            width_tier_1: 2,
-            width_tier_2: 1,
-            width_tier_3: 1,
-
-            color_tier_1: default_colors::TICK_TIER_1,
-            color_tier_2: default_colors::TICK_TIER_2,
-            color_tier_3: default_colors::TICK_TIER_3,
-
-            center_offset: 0,
-        }
-    }
-}
-
-/// The position of a modulation range indicator in a [`VSlider`]
+/// The placement of a modulation range indicator in a [`VSlider`]
 ///
 /// [`VSlider`]: ../../native/v_slider/struct.VSlider.html
 #[derive(Debug, Clone)]
-pub enum ModRangePosition {
+pub enum ModRangePlacement {
     /// In the center of the widget.
     Center,
     /// To the left of the widget.
@@ -225,32 +171,29 @@ pub enum ModRangePosition {
 /// [`VSlider`]: ../../native/v_slider/struct.VSlider.html
 #[derive(Debug, Clone)]
 pub struct ModRangeStyle {
-    /// The color of the first modulation range rectangle.
-    color_1: Color,
-    /// The color of a second modulation range rectangle.
-    color_2: Color,
-    /// The color of a third modulation range rectangle.
-    color_3: Color,
-    /// The width of the filled rectangle in pixels.
-    width: u16,
-    /// The position relative to the widget.
-    position: ModRangePosition,
-    /// The horizontal offset in pixels.
-    h_offset: u16,
-    /// The spacing between each modulation range rectangle in pixels.
-    spacing: u16,
-    /// The width of the real-time modulation indicator rectangle in pixels.
-    rt_indicator_width: u16,
-    /// The height of the real-time modulation indicator rectangle in pixels.
-    rt_indicator_height: u16,
-    /// The corner radius of the real-time modulation indicator rectangle.
-    rt_indicator_radius: u16,
-    /// The color of the first real-time modulation indicator rectangle.
-    rt_indicator_color_1: Color,
-    /// The color of a second real-time modulation indicator rectangle.
-    rt_indicator_color_2: Color,
-    /// The color of a third real-time modulation indicator rectangle.
-    rt_indicator_color_3: Color,
+    /// The color of the background rectangle. Set to `None` for no
+    /// background rectangle.
+    pub back_color: Option<Color>,
+    /// The border width of the background rectangle.
+    pub border_width: u16,
+    /// The border radius of the background rectangle.
+    pub border_radius: u16,
+    /// The border color of the background rectangle.
+    pub border_color: Color,
+    /// The color of a filled portion.
+    pub filled_color: Color,
+    /// The color of a filled portion when the range is inversed.
+    pub filled_color_inv: Color,
+    /// The width of the rectangle in pixels. Set this to `None` to use
+    /// the width of the widget.
+    pub width: Option<u16>,
+    /// The placement relative to the widget.
+    pub placement: ModRangePlacement,
+    /// The spacing from the end of the rectangle to the top or bottom of
+    /// the widget in pixels.
+    pub edge_padding: u16,
+    /// The offset in pixels.
+    pub offset: Point,
 }
 
 /// A set of rules that dictate the style of a [`VSlider`].
@@ -278,8 +221,13 @@ pub trait StyleSheet {
     ///
     /// [`TickMarkGroup`]: ../../core/tick_marks/struct.TickMarkGroup.html
     /// [`VSlider`]: ../../native/v_slider/struct.VSlider.html
-    fn tick_mark_style(&self) -> Option<TickMarkStyle> {
-        Some(TickMarkStyle::default())
+    fn tick_mark_style(
+        &self,
+    ) -> Option<(tick_marks::Style, tick_marks::Placement)> {
+        Some((
+            tick_marks::Style::default(),
+            tick_marks::Placement::default(),
+        ))
     }
 
     /// The style of a [`ModulationRange`] for a [`VSlider`]
@@ -292,14 +240,24 @@ pub trait StyleSheet {
         None
     }
 
+    /// The style of a second [`ModulationRange`] for a [`VSlider`]
+    ///
+    /// For no second modulation range, don't override this or set this to return `None`.
+    ///
+    /// [`ModulationRange`]: ../../core/struct.ModulationRange.html
+    /// [`VSlider`]: ../../native/v_slider/struct.VSlider.html
+    fn mod_range_style_2(&self) -> Option<ModRangeStyle> {
+        None
+    }
+
     /// The style of a [`TextMarkGroup`] for an [`VSlider`]
     ///
     /// For no text marks, set this to return `None`.
     ///
     /// [`TextMarkGroup`]: ../../core/text_marks/struct.TextMarkGroup.html
     /// [`VSlider`]: ../../native/v_slider/struct.VSlider.html
-    fn text_mark_style(&self) -> Option<bar_text_marks::Style> {
-        Some(bar_text_marks::Style::default())
+    fn text_mark_style(&self) -> Option<text_marks::Style> {
+        Some(text_marks::Style::default())
     }
 }
 
@@ -369,12 +327,36 @@ impl StyleSheet for Default {
         }
     }
 
-    fn tick_mark_style(&self) -> Option<TickMarkStyle> {
-        Some(TickMarkStyle::default())
+    fn tick_mark_style(
+        &self,
+    ) -> Option<(tick_marks::Style, tick_marks::Placement)> {
+        Some((
+            tick_marks::Style {
+                tier_1: Some(tick_marks::Shape::Line {
+                    length: 8,
+                    width: 2,
+                    color: default_colors::TICK_TIER_1,
+                }),
+                tier_2: Some(tick_marks::Shape::Line {
+                    length: 6,
+                    width: 1,
+                    color: default_colors::TICK_TIER_2,
+                }),
+                tier_3: Some(tick_marks::Shape::Line {
+                    length: 4,
+                    width: 1,
+                    color: default_colors::TICK_TIER_3,
+                }),
+            },
+            tick_marks::Placement::CenterSplit {
+                fill_length: false,
+                gap: 6,
+            },
+        ))
     }
 
-    fn text_mark_style(&self) -> Option<bar_text_marks::Style> {
-        Some(bar_text_marks::Style::default())
+    fn text_mark_style(&self) -> Option<text_marks::Style> {
+        Some(text_marks::Style::default())
     }
 }
 

@@ -11,7 +11,7 @@ use iced::{
 
 pub use inputs_tour_steps::style;
 
-static STARTING_STEP: usize = 0;
+static STARTING_STEP: usize = 4;
 
 pub fn main() {
     InputsTour::run(Settings {

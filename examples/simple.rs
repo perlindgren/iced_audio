@@ -4,8 +4,8 @@ use iced::{
 };
 // Import iced_audio modules.
 use iced_audio::{
-    h_slider, knob, v_slider, xy_pad, FloatRange, FreqRange, HSlider, IntRange,
-    Knob, LogDBRange, TickMark, TickMarkGroup, TickMarkTier, VSlider, XYPad,
+    h_slider, knob, tick_marks, v_slider, xy_pad, FloatRange, FreqRange,
+    HSlider, IntRange, Knob, LogDBRange, VSlider, XYPad,
 };
 
 // Create a unique identifier for each parameter. Note you may also use any
@@ -58,7 +58,7 @@ pub struct App {
     xy_pad_state: xy_pad::State<ParamID>,
 
     // A group of tick marks with their size and position.
-    center_tick_mark: TickMarkGroup,
+    center_tick_mark: tick_marks::Group,
 
     output_text: String,
 }
@@ -101,7 +101,7 @@ impl Sandbox for App {
             ),
 
             // Add a tick mark at the center position with the tier 2 size
-            center_tick_mark: vec![TickMark::center(TickMarkTier::Two)].into(),
+            center_tick_mark: tick_marks::Group::center(tick_marks::Tier::One),
 
             output_text: "Move a widget!".into(),
         }

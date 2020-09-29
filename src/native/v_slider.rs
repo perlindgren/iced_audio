@@ -11,9 +11,8 @@ use iced_native::{
 
 use std::hash::Hash;
 
-use crate::core::{
-    ModulationRange, Normal, Param, TextMarkGroup, TickMarkGroup,
-};
+use crate::core::{ModulationRange, Normal, Param};
+use crate::native::{text_marks, tick_marks};
 
 static DEFAULT_WIDTH: u16 = 14;
 static DEFAULT_SCALAR: f32 = 0.98;
@@ -38,8 +37,8 @@ where
     width: Length,
     height: Length,
     style: Renderer::Style,
-    tick_marks: Option<&'a TickMarkGroup>,
-    text_marks: Option<&'a TextMarkGroup>,
+    tick_marks: Option<&'a tick_marks::Group>,
+    text_marks: Option<&'a text_marks::TextMarkGroup>,
 }
 
 impl<'a, Message, Renderer: self::Renderer, ID>
@@ -142,24 +141,27 @@ where
         self
     }
 
-    /// Sets the [`TickMarkGroup`] to display. Note your [`StyleSheet`] must
+    /// Sets the [`tick_marks::Group`] to display. Note your [`StyleSheet`] must
     /// also implement `tick_mark_style(&self) -> Option<TickMarkStyle>` for
     /// them to display (which the default style does).
     ///
-    /// [`TickMarkGroup`]: ../../core/tick_marks/struct.TickMarkGroup.html
+    /// [`tick_marks::Group`]: ../../core/tick_marks/struct.tick_marks::Group.html
     /// [`StyleSheet`]: ../../style/v_slider/trait.StyleSheet.html
-    pub fn tick_marks(mut self, tick_marks: &'a TickMarkGroup) -> Self {
+    pub fn tick_marks(mut self, tick_marks: &'a tick_marks::Group) -> Self {
         self.tick_marks = Some(tick_marks);
         self
     }
 
-    /// Sets the [`TextMarkGroup`] to display. Note your [`StyleSheet`] must
+    /// Sets the [`text_marks::TextMarkGroup`] to display. Note your [`StyleSheet`] must
     /// also implement `text_mark_style(&self) -> Option<TextMarkStyle>` for
     /// them to display (which the default style does).
     ///
-    /// [`TextMarkGroup`]: ../../core/text_marks/struct.TextMarkGroup.html
+    /// [`text_marks::TextMarkGroup`]: ../../core/text_marks/struct.text_marks::TextMarkGroup.html
     /// [`StyleSheet`]: ../../style/v_slider/trait.StyleSheet.html
-    pub fn text_marks(mut self, text_marks: &'a TextMarkGroup) -> Self {
+    pub fn text_marks(
+        mut self,
+        text_marks: &'a text_marks::TextMarkGroup,
+    ) -> Self {
         self.text_marks = Some(text_marks);
         self
     }
@@ -354,6 +356,7 @@ where
             self.state.param.normal,
             self.state.is_dragging,
             self.state.modulation_range,
+            None,
             self.tick_marks,
             self.text_marks,
             &self.style,
@@ -398,9 +401,10 @@ pub trait Renderer: iced_native::Renderer {
         cursor_position: Point,
         normal: Normal,
         is_dragging: bool,
-        modulation_range: Option<ModulationRange>,
-        tick_marks: Option<&TickMarkGroup>,
-        text_marks: Option<&TextMarkGroup>,
+        mod_range_1: Option<ModulationRange>,
+        mod_range_2: Option<ModulationRange>,
+        tick_marks: Option<&tick_marks::Group>,
+        text_marks: Option<&text_marks::TextMarkGroup>,
         style: &Self::Style,
     ) -> Self::Output;
 }
