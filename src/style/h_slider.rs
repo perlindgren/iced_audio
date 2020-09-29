@@ -2,7 +2,7 @@
 //!
 //! [`HSlider`]: ../native/h_slider/struct.HSlider.html
 
-use iced::Color;
+use iced::{Color, Point};
 use iced_native::image;
 
 use crate::style::{default_colors, text_marks};
@@ -342,8 +342,8 @@ impl StyleSheet for Default {
 
     fn text_mark_style(&self) -> Option<text_marks::Style> {
         Some(text_marks::Style {
-            placement: text_marks::Placement::RightOrBottom,
-            offset: 5,
+            placement: text_marks::Placement::RightOrBottom { inside: false },
+            offset: Point { x: 5.0, y: 0.0 },
             ..text_marks::Style::default()
         })
     }

@@ -38,7 +38,7 @@ where
     height: Length,
     style: Renderer::Style,
     tick_marks: Option<&'a tick_marks::Group>,
-    text_marks: Option<&'a text_marks::TextMarkGroup>,
+    text_marks: Option<&'a text_marks::Group>,
 }
 
 impl<'a, Message, Renderer: self::Renderer, ID>
@@ -141,26 +141,24 @@ where
         self
     }
 
-    /// Sets the [`tick_marks::Group`] to display. Note your [`StyleSheet`] must
-    /// also implement `tick_mark_style(&self) -> Option<TickMarkStyle>` for
+    /// Sets the tick marks to display. Note your [`StyleSheet`] must
+    /// also implement `tick_marks_style(&self) -> Option<tick_marks::Style>` for
     /// them to display (which the default style does).
     ///
-    /// [`tick_marks::Group`]: ../../core/tick_marks/struct.tick_marks::Group.html
     /// [`StyleSheet`]: ../../style/v_slider/trait.StyleSheet.html
     pub fn tick_marks(mut self, tick_marks: &'a tick_marks::Group) -> Self {
         self.tick_marks = Some(tick_marks);
         self
     }
 
-    /// Sets the [`text_marks::TextMarkGroup`] to display. Note your [`StyleSheet`] must
-    /// also implement `text_mark_style(&self) -> Option<TextMarkStyle>` for
+    /// Sets the text marks to display. Note your [`StyleSheet`] must
+    /// also implement `text_marks_style(&self) -> Option<text_marks::Style>` for
     /// them to display (which the default style does).
     ///
-    /// [`text_marks::TextMarkGroup`]: ../../core/text_marks/struct.text_marks::TextMarkGroup.html
     /// [`StyleSheet`]: ../../style/v_slider/trait.StyleSheet.html
     pub fn text_marks(
         mut self,
-        text_marks: &'a text_marks::TextMarkGroup,
+        text_marks: &'a text_marks::Group,
     ) -> Self {
         self.text_marks = Some(text_marks);
         self
@@ -404,7 +402,7 @@ pub trait Renderer: iced_native::Renderer {
         mod_range_1: Option<ModulationRange>,
         mod_range_2: Option<ModulationRange>,
         tick_marks: Option<&tick_marks::Group>,
-        text_marks: Option<&text_marks::TextMarkGroup>,
+        text_marks: Option<&text_marks::Group>,
         style: &Self::Style,
     ) -> Self::Output;
 }

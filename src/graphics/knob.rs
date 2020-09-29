@@ -36,7 +36,7 @@ impl<B: Backend> knob::Renderer for Renderer<B> {
         is_dragging: bool,
         mod_range: Option<ModulationRange>,
         tick_marks: Option<&tick_marks::Group>,
-        text_marks: Option<&text_marks::TextMarkGroup>,
+        text_marks: Option<&text_marks::Group>,
         style_sheet: &Self::Style,
     ) -> Self::Output {
         let is_mouse_over = bounds.contains(cursor_position);
@@ -1036,8 +1036,11 @@ fn draw_text_marks(
     radius: f32,
     start_angle: f32,
     angle_span: f32,
-    text_marks: &text_marks::TextMarkGroup,
+    text_marks: &text_marks::Group,
 ) -> Primitive {
+    Primitive::None
+
+    /*
     let mut primitives: Vec<Primitive> = Vec::new();
 
     let color = style.color;
@@ -1081,4 +1084,5 @@ fn draw_text_marks(
     }
 
     Primitive::Group { primitives }
+    */
 }

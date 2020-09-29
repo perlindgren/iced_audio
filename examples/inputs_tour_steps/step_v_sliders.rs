@@ -47,10 +47,10 @@ pub struct VSliderStep {
     db_tick_marks: tick_marks::Group,
     freq_tick_marks: tick_marks::Group,
 
-    float_text_marks: text_marks::TextMarkGroup,
-    int_text_marks: text_marks::TextMarkGroup,
-    db_text_marks: text_marks::TextMarkGroup,
-    freq_text_marks: text_marks::TextMarkGroup,
+    float_text_marks: text_marks::Group,
+    int_text_marks: text_marks::Group,
+    db_text_marks: text_marks::Group,
+    freq_text_marks: text_marks::Group,
 
     output_text: String,
 }
@@ -148,20 +148,20 @@ impl Default for VSliderStep {
             ]
             .into(),
 
-            float_text_marks: text_marks::TextMarkGroup::min_max_and_center(
+            float_text_marks: text_marks::Group::min_max_and_center(
                 "-1", "+1", "0",
             ),
-            int_text_marks: text_marks::TextMarkGroup::evenly_spaced(vec![
+            int_text_marks: text_marks::Group::evenly_spaced(&[
                 "A", "B", "C", "D", "E", "F",
             ]),
-            db_text_marks: text_marks::TextMarkGroup::min_max_and_center(
+            db_text_marks: text_marks::Group::min_max_and_center(
                 "-12", "+12", "0",
             ),
-            freq_text_marks: text_marks::TextMarkGroup::new(vec![
-                text_marks::TextMark::new("100", freq_range.to_normal(100.0)),
-                text_marks::TextMark::new("1k", freq_range.to_normal(1000.0)),
-                text_marks::TextMark::new("10k", freq_range.to_normal(10000.0)),
-            ]),
+            freq_text_marks: vec![
+                (freq_range.to_normal(100.0), "100"),
+                (freq_range.to_normal(1000.0), "1k"),
+                (freq_range.to_normal(10000.0), "10k"),
+            ].into(),
 
             output_text: String::from("Move a widget"),
         }

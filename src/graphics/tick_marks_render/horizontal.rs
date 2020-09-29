@@ -513,11 +513,10 @@ pub fn draw_horizontal_tick_marks(
     placement: Placement,
     inverse: bool,
 ) -> Primitive {
-    let mut primitives: Vec<Primitive> =
-        Vec::with_capacity(tick_marks.len() * 2);
-
-    match placement {
+    let primitives = match placement {
         Placement::BothSides { offset, inside } => {
+            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len() * 2);
+
             if inside {
                 draw_horizontal_top_aligned(
                     &mut primitives,
@@ -553,8 +552,12 @@ pub fn draw_horizontal_tick_marks(
                     inverse,
                 );
             }
+
+            primitives
         }
         Placement::LeftOrTop { offset, inside } => {
+            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len());
+
             if inside {
                 draw_horizontal_top_aligned(
                     &mut primitives,
@@ -574,8 +577,12 @@ pub fn draw_horizontal_tick_marks(
                     inverse,
                 );
             }
+
+            primitives
         }
         Placement::RightOrBottom { offset, inside } => {
+            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len());
+
             if inside {
                 draw_horizontal_bottom_aligned(
                     &mut primitives,
@@ -595,8 +602,12 @@ pub fn draw_horizontal_tick_marks(
                     inverse,
                 );
             }
+
+            primitives
         }
         Placement::Center { fill_length } => {
+            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len());
+
             draw_horizontal_center_aligned(
                 &mut primitives,
                 bounds,
@@ -606,8 +617,12 @@ pub fn draw_horizontal_tick_marks(
                 fill_length,
                 inverse,
             );
+
+            primitives
         }
         Placement::CenterSplit { fill_length, gap } => {
+            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len() * 2);
+
             draw_horizontal_center_aligned_split(
                 &mut primitives,
                 bounds,
@@ -618,8 +633,10 @@ pub fn draw_horizontal_tick_marks(
                 f32::from(gap),
                 inverse,
             );
+
+            primitives
         }
-    }
+    };
 
     Primitive::Group { primitives }
 }

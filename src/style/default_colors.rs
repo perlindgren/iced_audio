@@ -65,6 +65,7 @@ pub static XY_PAD_CENTER_LINE: Color = Color {
     a: 0.5,
 };
 
+/*
 pub static DB_METER_BACK: Color = Color::from_rgb(0.45, 0.45, 0.45);
 pub static DB_METER_BORDER: Color = Color::from_rgb(0.2, 0.2, 0.2);
 pub static DB_METER_LOW: Color = Color::from_rgb(0.435, 0.886, 0.11);
@@ -79,3 +80,4 @@ pub static DB_METER_CLIP_MARKER: Color = Color {
 };
 pub static DB_METER_GAP: Color = Color::from_rgb(0.25, 0.25, 0.25);
 pub static PHASE_METER_CENTER_LINE: Color = Color::from_rgb(0.92, 0.92, 0.92);
+*/
