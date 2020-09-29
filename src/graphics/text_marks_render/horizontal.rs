@@ -2,7 +2,7 @@ use crate::native::text_marks;
 use crate::style::text_marks::{Placement, Style};
 
 use iced_graphics::Primitive;
-use iced_native::{HorizontalAlignment, Rectangle, VerticalAlignment, Align};
+use iced_native::{Align, HorizontalAlignment, Rectangle, VerticalAlignment};
 
 fn draw_aligned(
     primitives: &mut Vec<Primitive>,
@@ -28,7 +28,8 @@ fn draw_aligned(
                 content: text_mark.1.clone(),
                 size: text_size,
                 bounds: Rectangle {
-                    x: (start_x + (text_mark.0.scale_inv(bounds.width))).round(),
+                    x: (start_x + (text_mark.0.scale_inv(bounds.width)))
+                        .round(),
                     y,
                     width: text_bounds_width,
                     height: text_bounds_height,
@@ -67,7 +68,8 @@ pub fn draw_horizontal_text_marks(
 ) -> Primitive {
     let primitives = match style.placement {
         Placement::BothSides { inside } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(text_marks.group.len() * 2);
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(text_marks.group.len() * 2);
 
             if inside {
                 draw_aligned(
@@ -112,7 +114,8 @@ pub fn draw_horizontal_text_marks(
             primitives
         }
         Placement::LeftOrTop { inside } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(text_marks.group.len());
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(text_marks.group.len());
 
             if inside {
                 draw_aligned(
@@ -139,7 +142,8 @@ pub fn draw_horizontal_text_marks(
             primitives
         }
         Placement::RightOrBottom { inside } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(text_marks.group.len());
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(text_marks.group.len());
 
             if inside {
                 draw_aligned(
@@ -166,7 +170,8 @@ pub fn draw_horizontal_text_marks(
             primitives
         }
         Placement::Center { align } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(text_marks.group.len());
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(text_marks.group.len());
 
             match align {
                 Align::Start => {

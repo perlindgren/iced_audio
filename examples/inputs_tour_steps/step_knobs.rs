@@ -158,7 +158,8 @@ impl Default for KnobStep {
                 (freq_range.to_normal(100.0), "100"),
                 (freq_range.to_normal(1000.0), "1k"),
                 (freq_range.to_normal(10000.0), "10k"),
-            ].into(),
+            ]
+            .into(),
 
             output_text: String::from("Move a widget"),
         }

@@ -19,7 +19,8 @@ impl Group {
     /// [`Group`]: struct.Group.html
     /// [`TextMark`]: struct.TextMark.html
     pub fn from_normalized(text_marks: &[(Normal, &str)]) -> Self {
-        let mut group: Vec<(Normal, String)> = Vec::with_capacity(text_marks.len());
+        let mut group: Vec<(Normal, String)> =
+            Vec::with_capacity(text_marks.len());
         for text_mark in text_marks {
             group.push((text_mark.0, String::from(text_mark.1)));
         }
@@ -48,8 +49,9 @@ impl Group {
     pub fn min_max(min_text: &str, max_text: &str) -> Self {
         vec![
             (Normal::min(), String::from(min_text)),
-            (Normal::max(), String::from(max_text))
-        ].into()
+            (Normal::max(), String::from(max_text)),
+        ]
+        .into()
     }
 
     /// Returns a new [`Group`] with a [`TextMark`] in
@@ -69,8 +71,9 @@ impl Group {
         vec![
             (Normal::min(), String::from(min_text)),
             (Normal::center(), String::from(center_text)),
-            (Normal::max(), String::from(max_text))
-        ].into()
+            (Normal::max(), String::from(max_text)),
+        ]
+        .into()
     }
 
     /// Creates a group of text marks by subdividing the range
@@ -83,9 +86,7 @@ impl Group {
         min: Option<&str>,
         max: Option<&str>,
     ) -> Self {
-        let mut vec: Vec<(Normal, String)> = Vec::with_capacity(
-            text.len() + 2
-        );
+        let mut vec: Vec<(Normal, String)> = Vec::with_capacity(text.len() + 2);
 
         let ranges = text.len() + 1;
 
@@ -112,9 +113,7 @@ impl Group {
     ///
     /// * `text` - a group of strings to be displayed
     pub fn evenly_spaced(text: &[&str]) -> Self {
-        let mut vec: Vec<(Normal, String)> = Vec::with_capacity(
-            text.len()
-        );
+        let mut vec: Vec<(Normal, String)> = Vec::with_capacity(text.len());
 
         if text.len() == 1 {
             vec.push((Normal::min(), String::from(text[0])));

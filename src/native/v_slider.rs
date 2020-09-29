@@ -156,10 +156,7 @@ where
     /// them to display (which the default style does).
     ///
     /// [`StyleSheet`]: ../../style/v_slider/trait.StyleSheet.html
-    pub fn text_marks(
-        mut self,
-        text_marks: &'a text_marks::Group,
-    ) -> Self {
+    pub fn text_marks(mut self, text_marks: &'a text_marks::Group) -> Self {
         self.text_marks = Some(text_marks);
         self
     }

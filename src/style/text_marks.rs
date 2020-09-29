@@ -1,7 +1,7 @@
 //! Various styles for a [`TextMarkGroup`] in a bar meter widget
 ///
 /// [`TextMarkGroup`]: ../../core/text_marks/struct.TextMarkGroup.html
-use iced::{Color, Font, Point, Align};
+use iced::{Align, Color, Font, Point};
 
 use crate::style::default_colors;
 
@@ -30,7 +30,7 @@ pub enum Placement {
     Center {
         /// The alignment of the text.
         align: Align,
-    }
+    },
 }
 
 impl std::default::Default for Placement {

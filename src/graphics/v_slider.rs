@@ -12,9 +12,9 @@ use iced_native::{mouse, Background, Color, Point, Rectangle};
 
 pub use crate::native::v_slider::State;
 pub use crate::style::v_slider::{
-    HandleLayer, ModRangePlacement, ModRangeStyle, Rail, Style, StyleSheet,
-    ValueFill, ClassicRail, RectangleRail, TextureRail, ValueFillMode,
-    RectangleLayer, CircleLayer, TextureLayer,
+    CircleLayer, ClassicRail, HandleLayer, ModRangePlacement, ModRangeStyle,
+    Rail, RectangleLayer, RectangleRail, Style, StyleSheet, TextureLayer,
+    TextureRail, ValueFill, ValueFillMode,
 };
 
 /// A vertical slider GUI widget that controls a [`Param`]
@@ -147,7 +147,8 @@ impl<B: Backend> v_slider::Renderer for Renderer<B> {
             Primitive::None
         };
 
-        let handle_bottom = draw_handle_layer(&style.handle_bottom, &handle_bounds);
+        let handle_bottom =
+            draw_handle_layer(&style.handle_bottom, &handle_bounds);
         let handle_top = draw_handle_layer(&style.handle_top, &handle_bounds);
 
         (
@@ -170,9 +171,7 @@ impl<B: Backend> v_slider::Renderer for Renderer<B> {
 
 fn draw_rail(rail: &Rail, bounds: &Rectangle) -> Primitive {
     match rail {
-        Rail::None => {
-            Primitive::None
-        }
+        Rail::None => Primitive::None,
         Rail::Classic(classic_rail) => {
             let (left_color, right_color) = classic_rail.colors;
             let left_width = f32::from(classic_rail.widths.0);
@@ -227,14 +226,15 @@ fn draw_rail(rail: &Rail, bounds: &Rectangle) -> Primitive {
                     x: (bounds.x + ((bounds.width - width) / 2.0)).round(),
                     y: bounds.y + f32::from(rectangle_rail.edge_padding),
                     width,
-                    height: bounds.height - (f32::from(rectangle_rail.edge_padding) * 2.0),
+                    height: bounds.height
+                        - (f32::from(rectangle_rail.edge_padding) * 2.0),
                 },
                 background: Background::Color(rectangle_rail.color),
                 border_radius: rectangle_rail.border_radius,
                 border_width: rectangle_rail.border_width,
                 border_color: rectangle_rail.border_color,
             }
-        },
+        }
         Rail::Texture(texture_rail) => {
             let width = if let Some(width) = texture_rail.width {
                 f32::from(width)
@@ -252,7 +252,9 @@ fn draw_rail(rail: &Rail, bounds: &Rectangle) -> Primitive {
                 handle: texture_rail.image_handle.clone(),
                 /// The bounds of the image
                 bounds: Rectangle {
-                    x: (bounds.x + texture_rail.offset.x + ((bounds.width - width) / 2.0))
+                    x: (bounds.x
+                        + texture_rail.offset.x
+                        + ((bounds.width - width) / 2.0))
                         .round(),
                     y: (bounds.y
                         + texture_rail.offset.y
@@ -283,12 +285,7 @@ fn draw_value_fill(
                 + f32::from(value_fill.handle_spacing)
                 - f32::from(value_fill.border_width))
             .round();
-            (
-                y,
-                bounds.y + bounds.height
-                    - f32::from(padding)
-                    - y,
-            )
+            (y, bounds.y + bounds.height - f32::from(padding) - y)
         }
         ValueFillMode::FromTop { padding } => {
             if value_normal.value() == 1.0 {
@@ -451,9 +448,7 @@ fn draw_handle_layer(
     handle_bounds: &Rectangle,
 ) -> Primitive {
     match handle_layer {
-        HandleLayer::None => {
-            Primitive::None
-        }
+        HandleLayer::None => Primitive::None,
         HandleLayer::Rectangle(rectangle_layer) => {
             let width = if let Some(width) = rectangle_layer.width {
                 f32::from(width)

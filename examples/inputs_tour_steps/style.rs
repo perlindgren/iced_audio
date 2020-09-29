@@ -1,4 +1,4 @@
-use iced::{button, image, Background, Color, Point, Size, Vector, Align};
+use iced::{button, image, Align, Background, Color, Point, Size, Vector};
 use iced_audio::{
     h_slider, knob, mod_range_input, ramp, text_marks, tick_marks, v_slider,
     xy_pad, Normal,
@@ -156,9 +156,7 @@ impl VSliderRectStyle {
             border_color: Color::TRANSPARENT,
             handle_spacing: 2,
             width: None,
-            fill_mode: v_slider::ValueFillMode::FromBottom {
-                padding: 0,
-            },
+            fill_mode: v_slider::ValueFillMode::FromBottom { padding: 0 },
             h_offset: 0,
         }
     }
@@ -188,7 +186,7 @@ impl v_slider::StyleSheet for VSliderRectStyle {
             value_fill: Some(Self::active_value_fill()),
             handle_height: 5,
             handle_bottom: v_slider::HandleLayer::Rectangle(
-                Self::active_handle_bottom()
+                Self::active_handle_bottom(),
             ),
             handle_top: v_slider::HandleLayer::None,
         }
@@ -207,7 +205,7 @@ impl v_slider::StyleSheet for VSliderRectStyle {
                 v_slider::RectangleLayer {
                     color: HANDLE_HOVER_COLOR,
                     ..Self::active_handle_bottom()
-                }
+                },
             ),
             ..active
         }
@@ -322,16 +320,14 @@ impl v_slider::StyleSheet for VSliderRectBipolarStyle {
                 width: None,
                 edge_padding: 0,
             }),
-            value_fill: Some(
-                if value > Normal::center() {
-                    Self::active_value_fill_positive()
-                } else {
-                    v_slider::ValueFill {
-                        color: BP_FILLED_COLOR,
-                        ..Self::active_value_fill_positive()
-                    }
+            value_fill: Some(if value > Normal::center() {
+                Self::active_value_fill_positive()
+            } else {
+                v_slider::ValueFill {
+                    color: BP_FILLED_COLOR,
+                    ..Self::active_value_fill_positive()
                 }
-            ),
+            }),
             handle_height: 5,
             handle_bottom: v_slider::HandleLayer::Rectangle(
                 if value == Normal::center() {
@@ -346,7 +342,7 @@ impl v_slider::StyleSheet for VSliderRectBipolarStyle {
                         color: BP_HANDLE_COLOR,
                         ..Self::active_handle_center()
                     }
-                }
+                },
             ),
             handle_top: v_slider::HandleLayer::None,
         }
@@ -355,21 +351,19 @@ impl v_slider::StyleSheet for VSliderRectBipolarStyle {
     fn hovered(&self, value: Normal) -> v_slider::Style {
         let active = self.active(value);
         v_slider::Style {
-            value_fill: Some(
-                if value > Normal::center() {
-                    v_slider::ValueFill {
-                        color: FILLED_HOVER_COLOR,
-                        handle_spacing: 3,
-                        ..Self::active_value_fill_positive()
-                    }
-                } else {
-                    v_slider::ValueFill {
-                        color: BP_FILLED_HOVER_COLOR,
-                        handle_spacing: 3,
-                        ..Self::active_value_fill_positive()
-                    }
+            value_fill: Some(if value > Normal::center() {
+                v_slider::ValueFill {
+                    color: FILLED_HOVER_COLOR,
+                    handle_spacing: 3,
+                    ..Self::active_value_fill_positive()
                 }
-            ),
+            } else {
+                v_slider::ValueFill {
+                    color: BP_FILLED_HOVER_COLOR,
+                    handle_spacing: 3,
+                    ..Self::active_value_fill_positive()
+                }
+            }),
             handle_height: 6,
             handle_bottom: v_slider::HandleLayer::Rectangle(
                 if value == Normal::center() {
@@ -387,7 +381,7 @@ impl v_slider::StyleSheet for VSliderRectBipolarStyle {
                         color: BP_HANDLE_HOVER_COLOR,
                         ..Self::active_handle_center()
                     }
-                }
+                },
             ),
             ..active
         }
@@ -463,10 +457,8 @@ impl h_slider::StyleSheet for HSliderTextureStyle {
             font: Default::default(),
             bounds_width: 30,
             bounds_height: 14,
-            placement: text_marks::Placement::RightOrBottom {
-                inside: false,
-            },
-            offset: Point { x: 0.0, y: 5.0 }
+            placement: text_marks::Placement::RightOrBottom { inside: false },
+            offset: Point { x: 0.0, y: 5.0 },
         })
     }
 }
@@ -507,7 +499,7 @@ impl v_slider::StyleSheet for VSliderTextureStyle {
                     width: Some(self.size.width),
                     height: None,
                     offset: self.offset,
-                }
+                },
             ),
             handle_top: v_slider::HandleLayer::None,
         }
@@ -571,10 +563,8 @@ impl v_slider::StyleSheet for VSliderTextureStyle {
             font: Default::default(),
             bounds_width: 30,
             bounds_height: 14,
-            placement: text_marks::Placement::Center {
-                align: Align::End
-            },
-            offset: Point { x: -19.0, y: 0.0 }
+            placement: text_marks::Placement::Center { align: Align::End },
+            offset: Point { x: -19.0, y: 0.0 },
         })
     }
 }

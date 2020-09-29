@@ -3,7 +3,7 @@
 //! [`VSlider`]: ../../native/v_slider/struct.VSlider.html
 
 use iced::Color;
-use iced_native::{image, Point, Align};
+use iced_native::{image, Align, Point};
 
 use crate::core::Normal;
 use crate::style::{default_colors, text_marks, tick_marks};
@@ -37,7 +37,6 @@ pub struct ClassicRail {
     /// the widget in pixels.
     pub edge_padding: u16,
 }
-
 
 /// Background rectangle rail style
 #[derive(Debug, Clone)]
@@ -107,7 +106,7 @@ pub enum ValueFillMode {
         padding: u16,
     },
     /// Start from the center
-    FromCenter
+    FromCenter,
 }
 
 /// A rectangle filled from the starting value to the center
@@ -199,7 +198,6 @@ pub enum HandleLayer {
     Circle(CircleLayer),
     /// A texture
     Texture(TextureLayer),
-
     // TODO: Triangle and hexagon.
 }
 
@@ -344,33 +342,27 @@ impl StyleSheet for Default {
             }),
             value_fill: None,
             handle_height: 30,
-            handle_bottom: HandleLayer::Rectangle(
-                Self::handle_bottom()
-            ),
+            handle_bottom: HandleLayer::Rectangle(Self::handle_bottom()),
             // The notch in the middle of the handle.
-            handle_top: HandleLayer::Rectangle(
-                RectangleLayer {
-                    color: default_colors::BORDER,
-                    border_color: Color::TRANSPARENT,
-                    border_width: 0,
-                    border_radius: 0,
-                    width: None,
-                    height: Some(4),
-                    offset: Point::ORIGIN,
-                }
-            ),
+            handle_top: HandleLayer::Rectangle(RectangleLayer {
+                color: default_colors::BORDER,
+                border_color: Color::TRANSPARENT,
+                border_width: 0,
+                border_radius: 0,
+                width: None,
+                height: Some(4),
+                offset: Point::ORIGIN,
+            }),
         }
     }
 
     fn hovered(&self, value: Normal) -> Style {
         let active = self.active(value);
         Style {
-            handle_bottom: HandleLayer::Rectangle(
-                RectangleLayer {
-                    color: default_colors::LIGHT_BACK_HOVER,
-                    ..Self::handle_bottom()
-                }
-            ),
+            handle_bottom: HandleLayer::Rectangle(RectangleLayer {
+                color: default_colors::LIGHT_BACK_HOVER,
+                ..Self::handle_bottom()
+            }),
             ..active
         }
     }
@@ -378,12 +370,10 @@ impl StyleSheet for Default {
     fn dragging(&self, value: Normal) -> Style {
         let active = self.active(value);
         Style {
-            handle_bottom: HandleLayer::Rectangle(
-                RectangleLayer {
-                    color: default_colors::LIGHT_BACK_DRAG,
-                    ..Self::handle_bottom()
-                }
-            ),
+            handle_bottom: HandleLayer::Rectangle(RectangleLayer {
+                color: default_colors::LIGHT_BACK_DRAG,
+                ..Self::handle_bottom()
+            }),
             ..active
         }
     }
@@ -409,17 +399,13 @@ impl StyleSheet for Default {
                     color: default_colors::TICK_TIER_3,
                 }),
             },
-            tick_marks::Placement::Center {
-                fill_length: false,
-            },
+            tick_marks::Placement::Center { fill_length: false },
         ))
     }
 
     fn text_marks_style(&self) -> Option<text_marks::Style> {
         Some(text_marks::Style {
-            placement: text_marks::Placement::Center {
-                align: Align::End
-            },
+            placement: text_marks::Placement::Center { align: Align::End },
             offset: Point { x: -16.0, y: 0.0 },
             ..text_marks::Style::default()
         })

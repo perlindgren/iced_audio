@@ -515,7 +515,8 @@ pub fn draw_vertical_tick_marks(
 ) -> Primitive {
     let primitives = match placement {
         Placement::BothSides { offset, inside } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len() * 2);
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(tick_marks.len() * 2);
 
             if inside {
                 draw_vertical_left_aligned(
@@ -556,7 +557,8 @@ pub fn draw_vertical_tick_marks(
             primitives
         }
         Placement::LeftOrTop { offset, inside } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len());
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(tick_marks.len());
 
             if inside {
                 draw_vertical_left_aligned(
@@ -581,7 +583,8 @@ pub fn draw_vertical_tick_marks(
             primitives
         }
         Placement::RightOrBottom { offset, inside } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len());
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(tick_marks.len());
 
             if inside {
                 draw_vertical_right_aligned(
@@ -606,7 +609,8 @@ pub fn draw_vertical_tick_marks(
             primitives
         }
         Placement::Center { fill_length } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len());
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(tick_marks.len());
 
             draw_vertical_center_aligned(
                 &mut primitives,
@@ -621,7 +625,8 @@ pub fn draw_vertical_tick_marks(
             primitives
         }
         Placement::CenterSplit { fill_length, gap } => {
-            let mut primitives: Vec<Primitive> = Vec::with_capacity(tick_marks.len() * 2);
+            let mut primitives: Vec<Primitive> =
+                Vec::with_capacity(tick_marks.len() * 2);
 
             draw_vertical_center_aligned_split(
                 &mut primitives,
