@@ -14,7 +14,7 @@ use std::hash::Hash;
 use crate::core::{Normal, Param};
 
 static DEFAULT_SIZE: u16 = 10;
-static DEFAULT_SCALAR: f32 = 0.005;
+static DEFAULT_SCALAR: f32 = 0.005 / 2.0;
 static DEFAULT_MODIFIER_SCALAR: f32 = 0.02;
 
 /// An interactive dot that controls an [`Param`]

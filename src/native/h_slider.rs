@@ -15,11 +15,12 @@ use crate::core::{ModulationRange, Normal, Param};
 use crate::native::{text_marks, tick_marks};
 
 static DEFAULT_HEIGHT: u16 = 14;
+static DEFAULT_SCALAR: f32 = 0.98;
 static DEFAULT_MODIFIER_SCALAR: f32 = 0.02;
 
 /// A horizontal slider GUI widget that controls a [`Param`]
 ///
-/// An [`HSlider`] will try to fill the horizontal space of its container.
+/// an [`HSlider`] will try to fill the horizontal space of its container.
 ///
 /// [`Param`]: ../../core/param/trait.Param.html
 /// [`HSlider`]: struct.HSlider.html
@@ -30,6 +31,7 @@ where
 {
     state: &'a mut State<ID>,
     on_change: Box<dyn Fn(ID) -> Message>,
+    scalar: f32,
     modifier_scalar: f32,
     modifier_keys: keyboard::ModifiersState,
     width: Length,
@@ -59,6 +61,7 @@ where
         HSlider {
             state,
             on_change: Box::new(on_change),
+            scalar: DEFAULT_SCALAR,
             modifier_scalar: DEFAULT_MODIFIER_SCALAR,
             modifier_keys: keyboard::ModifiersState {
                 control: true,
@@ -73,7 +76,8 @@ where
     }
 
     /// Sets the width of the [`HSlider`].
-    /// The default width is `Length::Fill`.
+    ///
+    /// The default height is `Length::Fill`.
     ///
     /// [`HSlider`]: struct.HSlider.html
     pub fn width(mut self, width: Length) -> Self {
@@ -82,7 +86,8 @@ where
     }
 
     /// Sets the height of the [`HSlider`].
-    /// The default height is `Length::from(Length::Units(16))`.
+    ///
+    /// The default height is `Length::Units(14)`.
     ///
     /// [`HSlider`]: struct.HSlider.html
     pub fn height(mut self, height: Length) -> Self {
@@ -108,6 +113,19 @@ where
         modifier_keys: keyboard::ModifiersState,
     ) -> Self {
         self.modifier_keys = modifier_keys;
+        self
+    }
+
+    /// Sets the scalar to use when the user drags the slider per pixel.
+    ///
+    /// For example, a scalar of `0.5` will cause the slider to move half a
+    /// pixel for every pixel the mouse moves.
+    ///
+    /// The default scalar is `0.98`.
+    ///
+    /// [`HSlider`]: struct.HSlider.html
+    pub fn scalar(mut self, scalar: f32) -> Self {
+        self.scalar = scalar;
         self
     }
 
@@ -213,7 +231,7 @@ where
     ID: Debug + Copy + Clone,
 {
     fn width(&self) -> Length {
-        self.width
+        Length::Shrink
     }
 
     fn height(&self) -> Length {
@@ -246,7 +264,8 @@ where
                 mouse::Event::CursorMoved { .. } => {
                     if self.state.is_dragging {
                         let bounds_width = layout.bounds().width;
-                        if bounds_width != 0.0 {
+
+                        if bounds_width > 0.0 {
                             let mut movement_x = (cursor_position.x
                                 - self.state.prev_drag_x)
                                 / bounds_width;
@@ -257,6 +276,8 @@ where
                                 .matches(self.modifier_keys)
                             {
                                 movement_x *= self.modifier_scalar;
+                            } else {
+                                movement_x *= self.scalar;
                             }
 
                             let normal =
@@ -332,6 +353,7 @@ where
             self.state.param.normal,
             self.state.is_dragging,
             self.state.modulation_range,
+            None,
             self.tick_marks,
             self.text_marks,
             &self.style,
@@ -363,6 +385,7 @@ pub trait Renderer: iced_native::Renderer {
     ///   * the bounds of the [`HSlider`]
     ///   * the current cursor position
     ///   * the current normal of the [`HSlider`]
+    ///   * the height of the handle in pixels
     ///   * whether the slider is currently being dragged
     ///   * any tick marks to display
     ///   * any text marks to display
@@ -375,7 +398,8 @@ pub trait Renderer: iced_native::Renderer {
         cursor_position: Point,
         normal: Normal,
         is_dragging: bool,
-        modulation_range: Option<ModulationRange>,
+        mod_range_1: Option<ModulationRange>,
+        mod_range_2: Option<ModulationRange>,
         tick_marks: Option<&tick_marks::Group>,
         text_marks: Option<&text_marks::Group>,
         style: &Self::Style,

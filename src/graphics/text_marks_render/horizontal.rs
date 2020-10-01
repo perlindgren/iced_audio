@@ -75,7 +75,7 @@ pub fn draw_horizontal_text_marks(
                 draw_aligned(
                     &mut primitives,
                     bounds,
-                    bounds.x,
+                    bounds.y,
                     text_marks,
                     style,
                     inverse,
@@ -84,7 +84,7 @@ pub fn draw_horizontal_text_marks(
                 draw_aligned(
                     &mut primitives,
                     bounds,
-                    bounds.x + bounds.width,
+                    bounds.y + bounds.height,
                     text_marks,
                     style,
                     inverse,
@@ -94,7 +94,7 @@ pub fn draw_horizontal_text_marks(
                 draw_aligned(
                     &mut primitives,
                     bounds,
-                    bounds.x,
+                    bounds.y,
                     text_marks,
                     style,
                     inverse,
@@ -103,7 +103,7 @@ pub fn draw_horizontal_text_marks(
                 draw_aligned(
                     &mut primitives,
                     bounds,
-                    bounds.x + bounds.width,
+                    bounds.y + bounds.height,
                     text_marks,
                     style,
                     inverse,
@@ -121,7 +121,7 @@ pub fn draw_horizontal_text_marks(
                 draw_aligned(
                     &mut primitives,
                     bounds,
-                    bounds.x,
+                    bounds.y,
                     text_marks,
                     style,
                     inverse,
@@ -131,7 +131,7 @@ pub fn draw_horizontal_text_marks(
                 draw_aligned(
                     &mut primitives,
                     bounds,
-                    bounds.x,
+                    bounds.y,
                     text_marks,
                     style,
                     inverse,
@@ -149,7 +149,7 @@ pub fn draw_horizontal_text_marks(
                 draw_aligned(
                     &mut primitives,
                     bounds,
-                    bounds.x + bounds.width,
+                    bounds.y + bounds.height,
                     text_marks,
                     style,
                     inverse,
@@ -159,7 +159,7 @@ pub fn draw_horizontal_text_marks(
                 draw_aligned(
                     &mut primitives,
                     bounds,
-                    bounds.x + bounds.width,
+                    bounds.y + bounds.height,
                     text_marks,
                     style,
                     inverse,
@@ -178,7 +178,7 @@ pub fn draw_horizontal_text_marks(
                     draw_aligned(
                         &mut primitives,
                         bounds,
-                        bounds.center_x(),
+                        bounds.center_y(),
                         text_marks,
                         style,
                         inverse,
@@ -189,7 +189,7 @@ pub fn draw_horizontal_text_marks(
                     draw_aligned(
                         &mut primitives,
                         bounds,
-                        bounds.center_x(),
+                        bounds.center_y(),
                         text_marks,
                         style,
                         inverse,
@@ -200,7 +200,7 @@ pub fn draw_horizontal_text_marks(
                     draw_aligned(
                         &mut primitives,
                         bounds,
-                        bounds.center_x(),
+                        bounds.center_y(),
                         text_marks,
                         style,
                         inverse,

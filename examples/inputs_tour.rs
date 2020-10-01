@@ -11,13 +11,14 @@ use iced::{
 
 pub use inputs_tour_steps::style;
 
-static STARTING_STEP: usize = 4;
+static STARTING_STEP: usize = 1;
 
 pub fn main() {
     InputsTour::run(Settings {
         antialiasing: true,
         ..Settings::default()
-    });
+    })
+    .unwrap();
 }
 
 pub struct InputsTour {

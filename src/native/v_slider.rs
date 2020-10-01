@@ -76,7 +76,7 @@ where
     }
 
     /// Sets the width of the [`VSlider`].
-    /// The default width is `Length::from(Length::Units(16))`.
+    /// The default width is `Length::Units(14)`.
     ///
     /// [`VSlider`]: struct.VSlider.html
     pub fn width(mut self, width: Length) -> Self {

@@ -101,45 +101,86 @@ pub const KNOB_ARC_EMPTY_COLOR: Color = Color::from_rgb(0.85, 0.85, 0.85);
 // Custom style for the Rect HSlider
 
 pub struct HSliderRectStyle;
-impl h_slider::StyleSheet for HSliderRectStyle {
-    fn active(&self) -> h_slider::Style {
-        h_slider::Style::Rect(h_slider::RectStyle {
-            back_color: EMPTY_COLOR,
-            back_border_width: 1,
-            back_border_radius: 2,
-            back_border_color: BORDER_COLOR,
-            filled_color: FILLED_COLOR,
-            handle_width: 4,
-            handle_color: HANDLE_COLOR,
-            handle_filled_gap: 1,
-        })
+impl HSliderRectStyle {
+    fn active_value_fill() -> h_slider::ValueFill {
+        h_slider::ValueFill {
+            color: FILLED_COLOR,
+            border_width: 1,
+            border_radius: 2,
+            border_color: Color::TRANSPARENT,
+            handle_spacing: 2,
+            height: None,
+            fill_mode: h_slider::ValueFillMode::FromLeft { padding: 0 },
+            v_offset: 0,
+        }
     }
-
-    fn hovered(&self) -> h_slider::Style {
-        let active = self.active();
-        if let h_slider::Style::Rect(active) = active {
-            h_slider::Style::Rect(h_slider::RectStyle {
-                filled_color: FILLED_HOVER_COLOR,
-                handle_width: 5,
-                ..active
-            })
-        } else {
-            active
+    fn active_handle_bottom() -> h_slider::RectangleLayer {
+        h_slider::RectangleLayer {
+            color: HANDLE_COLOR,
+            border_color: Color::TRANSPARENT,
+            border_width: 1,
+            border_radius: 2,
+            width: None,
+            height: None,
+            offset: Point::ORIGIN,
+        }
+    }
+}
+impl h_slider::StyleSheet for HSliderRectStyle {
+    fn active(&self, _value: Normal) -> h_slider::Style {
+        h_slider::Style {
+            rail: h_slider::Rail::Rectangle(h_slider::RectangleRail {
+                color: EMPTY_COLOR,
+                border_color: BORDER_COLOR,
+                border_width: 1,
+                border_radius: 2,
+                height: None,
+                edge_padding: 0,
+            }),
+            value_fill: Some(Self::active_value_fill()),
+            handle_width: 5,
+            handle_bottom: h_slider::HandleLayer::Rectangle(
+                Self::active_handle_bottom(),
+            ),
+            handle_top: h_slider::HandleLayer::None,
         }
     }
 
-    fn dragging(&self) -> h_slider::Style {
-        self.hovered()
+    fn hovered(&self, value: Normal) -> h_slider::Style {
+        let active = self.active(value);
+        h_slider::Style {
+            handle_width: 6,
+            value_fill: Some(h_slider::ValueFill {
+                color: FILLED_HOVER_COLOR,
+                handle_spacing: 3,
+                ..Self::active_value_fill()
+            }),
+            handle_bottom: h_slider::HandleLayer::Rectangle(
+                h_slider::RectangleLayer {
+                    color: HANDLE_HOVER_COLOR,
+                    ..Self::active_handle_bottom()
+                },
+            ),
+            ..active
+        }
+    }
+
+    fn dragging(&self, value: Normal) -> h_slider::Style {
+        self.hovered(value)
     }
 
     fn mod_range_style(&self) -> Option<h_slider::ModRangeStyle> {
         Some(h_slider::ModRangeStyle {
-            width: 3,
-            offset: 2,
+            back_color: Some(Color::from_rgb(0.9, 0.9, 0.9)),
+            border_width: 0,
+            border_radius: 2,
+            border_color: Color::TRANSPARENT,
+            filled_color: KNOB_ARC_RIGHT_COLOR,
+            filled_color_inv: KNOB_ARC_COLOR,
+            height: Some(3),
             placement: h_slider::ModRangePlacement::Bottom,
-            empty_color: Some(KNOB_ARC_EMPTY_COLOR),
-            filled_color: KNOB_ARC_COLOR,
-            filled_inverse_color: KNOB_ARC_RIGHT_COLOR,
+            edge_padding: 1,
+            offset: Point { x: 0.0, y: 2.0 },
         })
     }
 }
@@ -244,39 +285,112 @@ impl v_slider::StyleSheet for VSliderRectStyle {
 // Custom style for the Rect Bipolar HSlider
 
 pub struct HSliderRectBipolarStyle;
-impl h_slider::StyleSheet for HSliderRectBipolarStyle {
-    fn active(&self) -> h_slider::Style {
-        h_slider::Style::RectBipolar(h_slider::RectBipolarStyle {
-            back_color: EMPTY_COLOR,
-            back_border_width: 1,
-            back_border_radius: 2,
-            back_border_color: BORDER_COLOR,
-            left_filled_color: FILLED_COLOR,
-            right_filled_color: Color::from_rgb(0.0, 0.605, 0.0),
-            handle_width: 4,
-            handle_left_color: HANDLE_COLOR,
-            handle_right_color: Color::from_rgb(0.0, 0.9, 0.0),
-            handle_center_color: Color::from_rgb(0.7, 0.7, 0.7),
-            handle_filled_gap: 1,
-        })
-    }
-
-    fn hovered(&self) -> h_slider::Style {
-        let active = self.active();
-        if let h_slider::Style::RectBipolar(active) = active {
-            h_slider::Style::RectBipolar(h_slider::RectBipolarStyle {
-                left_filled_color: FILLED_HOVER_COLOR,
-                right_filled_color: Color::from_rgb(0.0, 0.64, 0.0),
-                handle_width: 5,
-                ..active
-            })
-        } else {
-            active
+impl HSliderRectBipolarStyle {
+    fn active_value_fill_positive() -> h_slider::ValueFill {
+        h_slider::ValueFill {
+            color: FILLED_COLOR,
+            border_width: 1,
+            border_radius: 2,
+            border_color: Color::TRANSPARENT,
+            handle_spacing: 2,
+            height: None,
+            fill_mode: h_slider::ValueFillMode::FromCenter,
+            v_offset: 0,
         }
     }
 
-    fn dragging(&self) -> h_slider::Style {
-        self.hovered()
+    fn active_handle_center() -> h_slider::RectangleLayer {
+        h_slider::RectangleLayer {
+            color: CENTER_HANDLE_COLOR,
+            border_color: Color::TRANSPARENT,
+            border_width: 1,
+            border_radius: 2,
+            width: None,
+            height: None,
+            offset: Point::ORIGIN,
+        }
+    }
+}
+impl h_slider::StyleSheet for HSliderRectBipolarStyle {
+    fn active(&self, value: Normal) -> h_slider::Style {
+        h_slider::Style {
+            rail: h_slider::Rail::Rectangle(h_slider::RectangleRail {
+                color: EMPTY_COLOR,
+                border_color: BORDER_COLOR,
+                border_width: 1,
+                border_radius: 2,
+                height: None,
+                edge_padding: 0,
+            }),
+            value_fill: Some(if value > Normal::center() {
+                Self::active_value_fill_positive()
+            } else {
+                h_slider::ValueFill {
+                    color: BP_FILLED_COLOR,
+                    ..Self::active_value_fill_positive()
+                }
+            }),
+            handle_width: 5,
+            handle_bottom: h_slider::HandleLayer::Rectangle(
+                if value == Normal::center() {
+                    Self::active_handle_center()
+                } else if value > Normal::center() {
+                    h_slider::RectangleLayer {
+                        color: HANDLE_COLOR,
+                        ..Self::active_handle_center()
+                    }
+                } else {
+                    h_slider::RectangleLayer {
+                        color: BP_HANDLE_COLOR,
+                        ..Self::active_handle_center()
+                    }
+                },
+            ),
+            handle_top: h_slider::HandleLayer::None,
+        }
+    }
+
+    fn hovered(&self, value: Normal) -> h_slider::Style {
+        let active = self.active(value);
+        h_slider::Style {
+            value_fill: Some(if value > Normal::center() {
+                h_slider::ValueFill {
+                    color: FILLED_HOVER_COLOR,
+                    handle_spacing: 3,
+                    ..Self::active_value_fill_positive()
+                }
+            } else {
+                h_slider::ValueFill {
+                    color: BP_FILLED_HOVER_COLOR,
+                    handle_spacing: 3,
+                    ..Self::active_value_fill_positive()
+                }
+            }),
+            handle_width: 6,
+            handle_bottom: h_slider::HandleLayer::Rectangle(
+                if value == Normal::center() {
+                    h_slider::RectangleLayer {
+                        color: CENTER_HANDLE_HOVER_COLOR,
+                        ..Self::active_handle_center()
+                    }
+                } else if value > Normal::center() {
+                    h_slider::RectangleLayer {
+                        color: HANDLE_HOVER_COLOR,
+                        ..Self::active_handle_center()
+                    }
+                } else {
+                    h_slider::RectangleLayer {
+                        color: BP_HANDLE_HOVER_COLOR,
+                        ..Self::active_handle_center()
+                    }
+                },
+            ),
+            ..active
+        }
+    }
+
+    fn dragging(&self, value: Normal) -> h_slider::Style {
+        self.hovered(value)
     }
 }
 
@@ -394,71 +508,108 @@ impl v_slider::StyleSheet for VSliderRectBipolarStyle {
 
 // Custom style for the Texture HSlider
 
-pub struct HSliderTextureStyle(pub image::Handle);
+pub struct HSliderTextureStyle {
+    pub handle: image::Handle,
+    pub size: Size<u16>,
+    pub offset: Point,
+}
 impl h_slider::StyleSheet for HSliderTextureStyle {
-    fn active(&self) -> h_slider::Style {
-        h_slider::Style::Texture(h_slider::TextureStyle {
-            rail_colors: (
-                [0.0, 0.0, 0.0, 0.9].into(),
-                [0.36, 0.36, 0.36, 0.75].into(),
+    fn active(&self, _value: Normal) -> h_slider::Style {
+        h_slider::Style {
+            rail: h_slider::Rail::Classic(h_slider::ClassicRail {
+                colors: (
+                    Color {
+                        r: 0.0,
+                        g: 0.0,
+                        b: 0.0,
+                        a: 0.9,
+                    },
+                    Color {
+                        r: 0.36,
+                        g: 0.36,
+                        b: 0.36,
+                        a: 0.75,
+                    },
+                ),
+                widths: (1, 2),
+                edge_padding: 12,
+            }),
+            value_fill: None,
+            handle_width: self.size.width,
+            handle_bottom: h_slider::HandleLayer::Texture(
+                h_slider::TextureLayer {
+                    image_handle: self.handle.clone(),
+                    width: Some(self.size.width),
+                    height: None,
+                    offset: self.offset,
+                },
             ),
-            rail_widths: (1, 2),
-            texture: self.0.clone(),
-            handle_width: 38,
-            texture_padding: None,
-        })
+            handle_top: h_slider::HandleLayer::None,
+        }
     }
 
-    fn hovered(&self) -> h_slider::Style {
-        self.active()
+    fn hovered(&self, value: Normal) -> h_slider::Style {
+        self.active(value)
     }
 
-    fn dragging(&self) -> h_slider::Style {
-        self.active()
+    fn dragging(&self, value: Normal) -> h_slider::Style {
+        self.active(value)
     }
 
-    fn tick_mark_style(&self) -> Option<h_slider::TickMarkStyle> {
-        Some(h_slider::TickMarkStyle {
-            length_scale_tier_1: 0.85,
-            length_scale_tier_2: 0.8,
-            length_scale_tier_3: 0.75,
-
-            width_tier_1: 2,
-            width_tier_2: 1,
-            width_tier_3: 1,
-
-            color_tier_1: Color {
-                r: 0.56,
-                g: 0.56,
-                b: 0.56,
-                a: 0.75,
+    fn tick_marks_style(
+        &self,
+    ) -> Option<(tick_marks::Style, tick_marks::Placement)> {
+        Some((
+            tick_marks::Style {
+                tier_1: Some(tick_marks::Shape::Line {
+                    length: 10,
+                    width: 2,
+                    color: Color {
+                        r: 0.56,
+                        g: 0.56,
+                        b: 0.56,
+                        a: 0.75,
+                    },
+                }),
+                tier_2: Some(tick_marks::Shape::Line {
+                    length: 8,
+                    width: 2,
+                    color: Color {
+                        r: 0.56,
+                        g: 0.56,
+                        b: 0.56,
+                        a: 0.75,
+                    },
+                }),
+                tier_3: Some(tick_marks::Shape::Line {
+                    length: 7,
+                    width: 1,
+                    color: Color {
+                        r: 0.56,
+                        g: 0.56,
+                        b: 0.56,
+                        a: 0.75,
+                    },
+                }),
             },
-            color_tier_2: Color {
-                r: 0.56,
-                g: 0.56,
-                b: 0.56,
-                a: 0.75,
+            tick_marks::Placement::CenterSplit {
+                fill_length: false,
+                gap: 11,
             },
-            color_tier_3: Color {
-                r: 0.56,
-                g: 0.56,
-                b: 0.56,
-                a: 0.75,
-            },
-
-            center_offset: 5,
-        })
+        ))
     }
 
-    fn text_mark_style(&self) -> Option<text_marks::Style> {
+    fn text_marks_style(&self) -> Option<text_marks::Style> {
         Some(text_marks::Style {
             color: [0.16, 0.16, 0.16, 0.9].into(),
             text_size: 12,
             font: Default::default(),
             bounds_width: 30,
             bounds_height: 14,
-            placement: text_marks::Placement::RightOrBottom { inside: false },
-            offset: Point { x: 0.0, y: 5.0 },
+            placement: text_marks::Placement::Center {
+                align: Align::Start,
+            },
+            offset: Point { x: 0.0, y: 19.0 },
         })
     }
 }

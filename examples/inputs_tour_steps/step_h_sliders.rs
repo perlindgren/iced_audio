@@ -1,4 +1,4 @@
-use iced::{Column, Element, Length, Row, Text};
+use iced::{Column, Element, Length, Point, Row, Size, Text};
 use iced_native::image;
 
 use iced_audio::{
@@ -288,10 +288,15 @@ impl HSliderStep {
         .text_marks(&self.float_text_marks)
         // the height of the texture
         .height(Length::from(Length::Units(20)))
-        .style(style::HSliderTextureStyle(
+        .style(style::HSliderTextureStyle {
             // clone the handle to the loaded texture
-            self.h_slider_texture_handle.clone(),
-        ));
+            handle: self.h_slider_texture_handle.clone(),
+            size: Size {
+                width: 38,
+                height: 20,
+            }, // size of the texture
+            offset: Point::ORIGIN, // offset of the texture
+        });
 
         // push the widgets into rows
         let h_slider_row = Row::new()

@@ -1,23 +1,25 @@
-//! Display an interactive horizontal slider that controls a [`Param`]
+//! Display an interactive vertical slider that controls a [`Param`]
 //!
 //! [`Param`]: ../core/param/trait.Param.html
 
 use crate::core::{ModulationRange, Normal};
-use crate::graphics::{text_marks, text_marks_render, tick_marks};
+use crate::graphics::{
+    text_marks, text_marks_render, tick_marks, tick_marks_render,
+};
 use crate::native::h_slider;
 use iced_graphics::{Backend, Primitive, Renderer};
 use iced_native::{mouse, Background, Color, Point, Rectangle};
 
 pub use crate::native::h_slider::State;
 pub use crate::style::h_slider::{
-    ClassicHandle, ClassicStyle, ModRangePlacement, ModRangeStyle,
-    RectBipolarStyle, RectStyle, Style, StyleSheet, TextureStyle,
-    TickMarkStyle,
+    CircleLayer, ClassicRail, HandleLayer, ModRangePlacement, ModRangeStyle,
+    Rail, RectangleLayer, RectangleRail, Style, StyleSheet, TextureLayer,
+    TextureRail, ValueFill, ValueFillMode,
 };
 
-/// A horizontal slider GUI widget that controls a [`Param`]
+/// A vertical slider GUI widget that controls a [`Param`]
 ///
-/// An [`HSlider`] will try to fill the horizontal space of its container.
+/// An [`HSlider`] will try to fill the vertical space of its container.
 ///
 /// [`Param`]: ../../core/param/trait.Param.html
 /// [`HSlider`]: struct.HSlider.html
@@ -33,7 +35,8 @@ impl<B: Backend> h_slider::Renderer for Renderer<B> {
         cursor_position: Point,
         normal: Normal,
         is_dragging: bool,
-        mod_range: Option<ModulationRange>,
+        mod_range_1: Option<ModulationRange>,
+        mod_range_2: Option<ModulationRange>,
         tick_marks: Option<&tick_marks::Group>,
         text_marks: Option<&text_marks::Group>,
         style_sheet: &Self::Style,
@@ -41,864 +44,498 @@ impl<B: Backend> h_slider::Renderer for Renderer<B> {
         let is_mouse_over = bounds.contains(cursor_position);
 
         let style = if is_dragging {
-            style_sheet.dragging()
+            style_sheet.dragging(normal)
         } else if is_mouse_over {
-            style_sheet.hovered()
+            style_sheet.hovered(normal)
         } else {
-            style_sheet.active()
+            style_sheet.active(normal)
         };
 
-        let tick_mark_style = style_sheet.tick_mark_style();
-        let text_mark_style = style_sheet.text_mark_style();
+        let tick_mark_style = style_sheet.tick_marks_style();
+        let text_mark_style = style_sheet.text_marks_style();
 
-        let bounds_x = bounds.x.floor();
-        let bounds_y = bounds.y.floor();
+        let bounds = Rectangle {
+            x: bounds.x.round(),
+            y: bounds.y.round(),
+            width: bounds.width.round(),
+            height: bounds.height.round(),
+        };
+        let handle_width = f32::from(style.handle_width);
 
-        let bounds_width = bounds.width.floor();
-        let bounds_height = bounds.height.floor();
+        let mark_bounds = Rectangle {
+            x: bounds.x + (handle_width / 2.0).round(),
+            y: bounds.y,
+            width: bounds.width - handle_width,
+            height: bounds.height,
+        };
 
-        let rail_y = (bounds_y + (bounds_height / 2.0)).floor();
-
-        let mod_range_line = {
-            if let Some(mod_range) = mod_range {
-                if mod_range.visible {
-                    if let Some(style) = style_sheet.mod_range_style() {
-                        draw_mod_range(
-                            bounds_x,
-                            bounds_y,
-                            bounds_width,
-                            bounds_height,
-                            mod_range,
-                            &style,
-                        )
-                    } else {
-                        Primitive::None
-                    }
-                } else {
-                    Primitive::None
-                }
+        let tick_marks_primitive = if let Some(tick_marks) = tick_marks {
+            if let Some((tick_mark_style, placement)) = &tick_mark_style {
+                tick_marks_render::draw_horizontal_tick_marks(
+                    &mark_bounds,
+                    tick_marks,
+                    tick_mark_style,
+                    *placement,
+                    false,
+                )
             } else {
                 Primitive::None
             }
+        } else {
+            Primitive::None
         };
 
-        let primitives = match style {
-            Style::Texture(style) => draw_texture_style(
-                normal,
-                rail_y,
-                bounds_x,
-                bounds_y,
-                bounds_width,
-                bounds_height,
-                tick_marks,
-                text_marks,
-                &tick_mark_style,
-                &text_mark_style,
-                style,
-                mod_range_line,
-            ),
-            Style::Classic(style) => draw_classic_style(
-                normal,
-                rail_y,
-                bounds_x,
-                bounds_y,
-                bounds_width,
-                bounds_height,
-                tick_marks,
-                text_marks,
-                &tick_mark_style,
-                &text_mark_style,
-                &style,
-                mod_range_line,
-            ),
-            Style::Rect(style) => draw_rect_style(
-                normal,
-                rail_y,
-                bounds_x,
-                bounds_y,
-                bounds_width,
-                bounds_height,
-                tick_marks,
-                text_marks,
-                &tick_mark_style,
-                &text_mark_style,
-                &style,
-                mod_range_line,
-            ),
-            Style::RectBipolar(style) => draw_rect_bipolar_style(
-                normal,
-                rail_y,
-                bounds_x,
-                bounds_y,
-                bounds_width,
-                bounds_height,
-                tick_marks,
-                text_marks,
-                &tick_mark_style,
-                &text_mark_style,
-                &style,
-                mod_range_line,
-            ),
+        let text_marks_primitive = if let Some(text_marks) = text_marks {
+            if let Some(text_mark_style) = &text_mark_style {
+                text_marks_render::draw_horizontal_text_marks(
+                    &mark_bounds,
+                    text_marks,
+                    text_mark_style,
+                    false,
+                )
+            } else {
+                Primitive::None
+            }
+        } else {
+            Primitive::None
         };
 
-        (primitives, mouse::Interaction::default())
+        let rail = draw_rail(&style.rail, &bounds);
+
+        let handle_bounds = Rectangle {
+            x: (bounds.x + (mark_bounds.width * normal.value())).round(),
+            y: bounds.y,
+            width: handle_width,
+            height: bounds.height,
+        };
+
+        let value_fill = if let Some(value_fill_style) = &style.value_fill {
+            draw_value_fill(value_fill_style, &bounds, &handle_bounds, normal)
+        } else {
+            Primitive::None
+        };
+
+        let mod_range_1_primitive = if let Some(mod_range) = mod_range_1 {
+            if let Some(mod_range_style) = &style_sheet.mod_range_style() {
+                draw_mod_range(
+                    mod_range_style,
+                    &bounds,
+                    mod_range.start,
+                    mod_range.end,
+                    true,
+                )
+            } else {
+                Primitive::None
+            }
+        } else {
+            Primitive::None
+        };
+
+        let mod_range_2_primitive = if let Some(mod_range) = mod_range_2 {
+            if let Some(mod_range_style) = &style_sheet.mod_range_style_2() {
+                draw_mod_range(
+                    mod_range_style,
+                    &bounds,
+                    mod_range.start,
+                    mod_range.end,
+                    true,
+                )
+            } else {
+                Primitive::None
+            }
+        } else {
+            Primitive::None
+        };
+
+        let handle_bottom =
+            draw_handle_layer(&style.handle_bottom, &handle_bounds);
+        let handle_top = draw_handle_layer(&style.handle_top, &handle_bounds);
+
+        (
+            Primitive::Group {
+                primitives: vec![
+                    rail,
+                    tick_marks_primitive,
+                    text_marks_primitive,
+                    value_fill,
+                    mod_range_1_primitive,
+                    mod_range_2_primitive,
+                    handle_bottom,
+                    handle_top,
+                ],
+            },
+            mouse::Interaction::default(),
+        )
+    }
+}
+
+fn draw_rail(rail: &Rail, bounds: &Rectangle) -> Primitive {
+    match rail {
+        Rail::None => Primitive::None,
+        Rail::Classic(classic_rail) => {
+            let (top_color, bottom_color) = classic_rail.colors;
+            let top_width = f32::from(classic_rail.widths.0);
+            let bottom_width = f32::from(classic_rail.widths.1);
+            let edge_padding = f32::from(classic_rail.edge_padding);
+
+            let x = bounds.x + edge_padding;
+            let width = bounds.width - (edge_padding * 2.0);
+
+            let center_y = bounds.y + (bounds.height / 2.0);
+            let start_y =
+                (center_y - ((top_width + bottom_width) / 2.0)).round();
+
+            let top_rail = Primitive::Quad {
+                bounds: Rectangle {
+                    x,
+                    y: start_y,
+                    width,
+                    height: top_width,
+                },
+                background: Background::Color(top_color),
+                border_radius: 0,
+                border_width: 0,
+                border_color: Color::TRANSPARENT,
+            };
+            let bottom_rail = Primitive::Quad {
+                bounds: Rectangle {
+                    x,
+                    y: start_y + top_width,
+                    width,
+                    height: bottom_width,
+                },
+                background: Background::Color(bottom_color),
+                border_radius: 0,
+                border_width: 0,
+                border_color: Color::TRANSPARENT,
+            };
+
+            Primitive::Group {
+                primitives: vec![top_rail, bottom_rail],
+            }
+        }
+        Rail::Rectangle(rectangle_rail) => {
+            let height = if let Some(height) = rectangle_rail.height {
+                f32::from(height)
+            } else {
+                bounds.height
+            };
+
+            Primitive::Quad {
+                bounds: Rectangle {
+                    x: bounds.x + f32::from(rectangle_rail.edge_padding),
+                    y: (bounds.y + ((bounds.height - height) / 2.0)).round(),
+                    width: bounds.width
+                        - (f32::from(rectangle_rail.edge_padding) * 2.0),
+                    height,
+                },
+                background: Background::Color(rectangle_rail.color),
+                border_radius: rectangle_rail.border_radius,
+                border_width: rectangle_rail.border_width,
+                border_color: rectangle_rail.border_color,
+            }
+        }
+        Rail::Texture(texture_rail) => {
+            let width = if let Some(width) = texture_rail.width {
+                f32::from(width) - (f32::from(texture_rail.edge_padding) * 2.0)
+            } else {
+                bounds.width
+            };
+
+            let height = if let Some(height) = texture_rail.height {
+                f32::from(height)
+            } else {
+                bounds.height
+            };
+
+            Primitive::Image {
+                handle: texture_rail.image_handle.clone(),
+                /// The bounds of the image
+                bounds: Rectangle {
+                    x: (bounds.x
+                        + texture_rail.offset.x
+                        + f32::from(texture_rail.edge_padding)
+                        + ((bounds.width - width) / 2.0))
+                        .round(),
+                    y: (bounds.y
+                        + texture_rail.offset.y
+                        + ((bounds.height - height) / 2.0))
+                        .round(),
+                    width,
+                    height,
+                },
+            }
+        }
+    }
+}
+
+fn draw_value_fill(
+    value_fill: &ValueFill,
+    bounds: &Rectangle,
+    handle_bounds: &Rectangle,
+    value_normal: Normal,
+) -> Primitive {
+    let (x, width) = match value_fill.fill_mode {
+        ValueFillMode::FromLeft { padding } => {
+            if value_normal.value() == 0.0 {
+                return Primitive::None;
+            }
+
+            let x = bounds.x + f32::from(padding);
+            (
+                x,
+                (handle_bounds.center_x()
+                    - f32::from(value_fill.handle_spacing)
+                    + f32::from(value_fill.border_width)
+                    - x)
+                    .floor(),
+            )
+        }
+        ValueFillMode::FromRight { padding } => {
+            if value_normal.value() == 1.0 {
+                return Primitive::None;
+            }
+
+            let x = (handle_bounds.center_x()
+                + f32::from(value_fill.handle_spacing)
+                - f32::from(value_fill.border_width))
+            .round();
+            (x, bounds.x + bounds.width - f32::from(padding) - x)
+        }
+        ValueFillMode::FromCenter => {
+            if value_normal.value() == 0.5 {
+                return Primitive::None;
+            }
+
+            let center_x = bounds.center_x().round();
+            if value_normal.value() > 0.5 {
+                (
+                    center_x,
+                    (handle_bounds.center_x()
+                        - f32::from(value_fill.handle_spacing)
+                        + f32::from(value_fill.border_width)
+                        - center_x)
+                        .floor(),
+                )
+            } else {
+                let x = (handle_bounds.center_x()
+                    + f32::from(value_fill.handle_spacing)
+                    - f32::from(value_fill.border_width))
+                .round();
+                (x, center_x - x)
+            }
+        }
+    };
+
+    let (y, height) = if let Some(height) = value_fill.height {
+        let height = f32::from(height);
+        (
+            (bounds.y
+                + ((bounds.height - height) / 2.0)
+                + f32::from(value_fill.v_offset))
+            .round(),
+            height,
+        )
+    } else {
+        (bounds.y + f32::from(value_fill.v_offset), bounds.height)
+    };
+
+    Primitive::Quad {
+        bounds: Rectangle {
+            x,
+            y,
+            width,
+            height,
+        },
+        background: Background::Color(value_fill.color),
+        border_radius: value_fill.border_radius,
+        border_width: value_fill.border_width,
+        border_color: value_fill.border_color,
     }
 }
 
 fn draw_mod_range(
-    bounds_x: f32,
-    bounds_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
-    mod_range: ModulationRange,
-    style: &ModRangeStyle,
+    mod_range: &ModRangeStyle,
+    bounds: &Rectangle,
+    start_normal: Normal,
+    end_normal: Normal,
+    active: bool,
 ) -> Primitive {
-    let offset = style.offset as f32;
+    let height = if let Some(height) = mod_range.height {
+        f32::from(height)
+    } else {
+        bounds.height
+    };
 
-    let (y, height) = match style.placement {
+    let y = match mod_range.placement {
         ModRangePlacement::Center => {
-            (bounds_y + offset, bounds_height - (offset * 2.0))
+            (bounds.y + ((bounds.height - height) / 2.0) + mod_range.offset.y)
+                .round()
         }
         ModRangePlacement::Top => {
-            (bounds_y - offset - style.width as f32, style.width as f32)
+            (bounds.y - height + mod_range.offset.y).round()
         }
         ModRangePlacement::Bottom => {
-            (bounds_y + bounds_height + offset, style.width as f32)
+            (bounds.y + bounds.height + mod_range.offset.y).round()
         }
     };
 
-    let back: Primitive = {
-        if let Some(empty_color) = style.empty_color {
-            Primitive::Quad {
-                bounds: Rectangle {
-                    x: bounds_x,
-                    y,
-                    width: bounds_width,
-                    height,
-                },
-                background: Background::Color(empty_color),
-                border_radius: 0,
-                border_width: 0,
-                border_color: Color::TRANSPARENT,
-            }
-        } else {
+    let back_x = (bounds.x + mod_range.offset.x).round();
+    let back_width = bounds.width - (f32::from(mod_range.edge_padding) * 2.0);
+
+    let back = if let Some(back_color) = mod_range.back_color {
+        Primitive::Quad {
+            bounds: Rectangle {
+                x: back_x,
+                y,
+                width: back_width,
+                height,
+            },
+            background: Background::Color(back_color),
+            border_radius: mod_range.border_radius,
+            border_width: mod_range.border_width,
+            border_color: mod_range.border_color,
+        }
+    } else {
+        Primitive::None
+    };
+
+    let range = if active {
+        let start_offset_x = (start_normal.value() * back_width).round();
+        let end_offset_x = (end_normal.value() * back_width).round();
+
+        if start_offset_x == end_offset_x {
             Primitive::None
-        }
-    };
-
-    let filled: Primitive = {
-        if mod_range.filled_visible
-            && (mod_range.start.value() != mod_range.end.value())
-        {
-            let (start, end, color) =
-                if mod_range.start.value() < mod_range.end.value() {
-                    (
-                        mod_range.start.value(),
-                        mod_range.end.value(),
-                        style.filled_color,
-                    )
-                } else {
-                    (
-                        mod_range.end.value(),
-                        mod_range.start.value(),
-                        style.filled_inverse_color,
-                    )
-                };
-
-            let start_offset = bounds_width * start;
-            let filled_width = (bounds_width * end) - start_offset;
+        } else {
+            let (x, width, color) = if end_offset_x > start_offset_x {
+                (
+                    back_x + start_offset_x,
+                    end_offset_x - start_offset_x,
+                    mod_range.filled_color_inv,
+                )
+            } else {
+                (
+                    back_x + end_offset_x,
+                    start_offset_x - end_offset_x,
+                    mod_range.filled_color,
+                )
+            };
 
             Primitive::Quad {
                 bounds: Rectangle {
-                    x: bounds_x + start_offset,
+                    x,
                     y,
-                    width: filled_width,
+                    width,
                     height,
                 },
                 background: Background::Color(color),
-                border_radius: 0,
-                border_width: 0,
+                border_radius: mod_range.border_radius,
+                border_width: mod_range.border_width,
                 border_color: Color::TRANSPARENT,
             }
-        } else {
-            Primitive::None
-        }
-    };
-
-    Primitive::Group {
-        primitives: vec![back, filled],
-    }
-}
-
-fn draw_texture_style(
-    normal: Normal,
-    rail_y: f32,
-    bounds_x: f32,
-    bounds_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
-    tick_marks: Option<&tick_marks::Group>,
-    text_marks: Option<&text_marks::Group>,
-    tick_mark_style: &Option<TickMarkStyle>,
-    text_mark_style: &Option<crate::style::text_marks::Style>,
-    style: TextureStyle,
-    mod_range_line: Primitive,
-) -> Primitive {
-    let handle_width = style.handle_width as f32;
-
-    let bar_x = (bounds_x + (handle_width / 2.0)).floor();
-    let bar_width = bounds_width - handle_width;
-
-    let tick_marks: Primitive = {
-        if let Some(tick_marks) = tick_marks {
-            if let Some(style) = tick_mark_style {
-                draw_tick_marks(
-                    rail_y,
-                    bar_x,
-                    bar_width,
-                    bounds_height,
-                    tick_marks,
-                    &style,
-                )
-            } else {
-                Primitive::None
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    let text_marks: Primitive = {
-        if let Some(text_marks) = text_marks {
-            if let Some(style) = text_mark_style {
-                text_marks_render::draw_horizontal_text_marks(
-                    &Rectangle {
-                        x: bar_x,
-                        y: bounds_y,
-                        width: bar_width,
-                        height: bounds_height,
-                    },
-                    &text_marks,
-                    style,
-                    false,
-                )
-            } else {
-                Primitive::None
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    let (top_rail_width, bottom_rail_width) = style.rail_widths;
-    let (top_rail_color, bottom_rail_color) = style.rail_colors;
-    let (top_rail, bottom_rail) = draw_rails(
-        rail_y,
-        bounds_x,
-        bounds_width,
-        top_rail_width,
-        bottom_rail_width,
-        &top_rail_color,
-        &bottom_rail_color,
-    );
-
-    let handle_offset = normal.scale(bounds_width - handle_width).floor();
-
-    let handle = {
-        if let Some(pad) = style.texture_padding {
-            Primitive::Image {
-                handle: style.texture,
-                bounds: Rectangle {
-                    x: bounds_x + handle_offset - pad.left as f32,
-                    y: bounds_y - pad.top as f32,
-                    width: handle_width + (pad.left + pad.right) as f32,
-                    height: bounds_height + (pad.top + pad.bottom) as f32,
-                },
-            }
-        } else {
-            Primitive::Image {
-                handle: style.texture,
-                bounds: Rectangle {
-                    x: bounds_x + handle_offset,
-                    y: bounds_y,
-                    width: handle_width,
-                    height: bounds_height,
-                },
-            }
-        }
-    };
-
-    Primitive::Group {
-        primitives: vec![
-            tick_marks,
-            text_marks,
-            top_rail,
-            bottom_rail,
-            handle,
-            mod_range_line,
-        ],
-    }
-}
-
-fn draw_classic_style(
-    normal: Normal,
-    rail_y: f32,
-    bounds_x: f32,
-    bounds_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
-    tick_marks: Option<&tick_marks::Group>,
-    text_marks: Option<&text_marks::Group>,
-    tick_mark_style: &Option<TickMarkStyle>,
-    text_mark_style: &Option<crate::style::text_marks::Style>,
-    style: &ClassicStyle,
-    mod_range_line: Primitive,
-) -> Primitive {
-    let handle_width = style.handle.width as f32;
-
-    let bar_x = (bounds_x + (handle_width / 2.0)).floor();
-    let bar_width = bounds_width - handle_width;
-
-    let tick_marks: Primitive = {
-        if let Some(tick_marks) = tick_marks {
-            if let Some(style) = tick_mark_style {
-                draw_tick_marks(
-                    rail_y,
-                    bar_x,
-                    bar_width,
-                    bounds_height,
-                    tick_marks,
-                    &style,
-                )
-            } else {
-                Primitive::None
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    let text_marks: Primitive = {
-        if let Some(text_marks) = text_marks {
-            if let Some(style) = text_mark_style {
-                text_marks_render::draw_horizontal_text_marks(
-                    &Rectangle {
-                        x: bar_x,
-                        y: bounds_y,
-                        width: bar_width,
-                        height: bounds_height,
-                    },
-                    &text_marks,
-                    style,
-                    false,
-                )
-            } else {
-                Primitive::None
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    let (top_rail_width, bottom_rail_width) = style.rail_widths;
-    let (top_rail_color, bottom_rail_color) = style.rail_colors;
-    let (top_rail, bottom_rail) = draw_rails(
-        rail_y,
-        bounds_x,
-        bounds_width,
-        top_rail_width,
-        bottom_rail_width,
-        &top_rail_color,
-        &bottom_rail_color,
-    );
-
-    let handle_border_radius = style.handle.border_radius;
-
-    let handle_offset = normal.scale(bounds_width - handle_width).floor();
-
-    let notch_width = style.handle.notch_width as f32;
-
-    let handle = Primitive::Quad {
-        bounds: Rectangle {
-            x: bounds_x + handle_offset,
-            y: bounds_y,
-            width: handle_width,
-            height: bounds_height,
-        },
-        background: Background::Color(style.handle.color),
-        border_radius: handle_border_radius,
-        border_width: style.handle.border_width,
-        border_color: style.handle.border_color,
-    };
-
-    let handle_notch: Primitive = {
-        if style.handle.notch_width != 0 {
-            Primitive::Quad {
-                bounds: Rectangle {
-                    x: (bounds_x + handle_offset + (handle_width / 2.0)
-                        - (notch_width / 2.0))
-                        .floor(),
-                    y: bounds_y,
-                    width: notch_width,
-                    height: bounds_height,
-                },
-                background: Background::Color(style.handle.notch_color),
-                border_radius: 0,
-                border_width: 0,
-                border_color: Color::TRANSPARENT,
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    Primitive::Group {
-        primitives: vec![
-            tick_marks,
-            text_marks,
-            top_rail,
-            bottom_rail,
-            handle,
-            handle_notch,
-            mod_range_line,
-        ],
-    }
-}
-
-fn draw_rect_style(
-    normal: Normal,
-    rail_y: f32,
-    bounds_x: f32,
-    bounds_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
-    tick_marks: Option<&tick_marks::Group>,
-    text_marks: Option<&text_marks::Group>,
-    tick_mark_style: &Option<TickMarkStyle>,
-    text_mark_style: &Option<crate::style::text_marks::Style>,
-    style: &RectStyle,
-    mod_range_line: Primitive,
-) -> Primitive {
-    let handle_width = style.handle_width as f32;
-
-    let bar_x = (bounds_x + (handle_width / 2.0)).floor();
-    let bar_width = bounds_width - handle_width;
-
-    let tick_marks: Primitive = {
-        if let Some(tick_marks) = tick_marks {
-            if let Some(style) = tick_mark_style {
-                draw_tick_marks(
-                    rail_y,
-                    bar_x,
-                    bar_width,
-                    bounds_height,
-                    tick_marks,
-                    &style,
-                )
-            } else {
-                Primitive::None
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    let text_marks: Primitive = {
-        if let Some(text_marks) = text_marks {
-            if let Some(style) = text_mark_style {
-                text_marks_render::draw_horizontal_text_marks(
-                    &Rectangle {
-                        x: bar_x,
-                        y: bounds_y,
-                        width: bar_width,
-                        height: bounds_height,
-                    },
-                    &text_marks,
-                    style,
-                    false,
-                )
-            } else {
-                Primitive::None
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    let empty_rect = Primitive::Quad {
-        bounds: Rectangle {
-            x: bounds_x,
-            y: bounds_y,
-            width: bounds_width,
-            height: bounds_height,
-        },
-        background: Background::Color(style.back_color),
-        border_radius: style.back_border_radius,
-        border_width: style.back_border_width,
-        border_color: style.back_border_color,
-    };
-
-    let border_width = style.back_border_width as f32;
-    let twice_border_width = border_width * 2.0;
-
-    let handle_offset = normal
-        .scale(bounds_width - twice_border_width - handle_width)
-        .floor();
-
-    let filled_rect = Primitive::Quad {
-        bounds: Rectangle {
-            x: bounds_x,
-            y: bounds_y,
-            width: handle_offset + twice_border_width
-                - style.handle_filled_gap as f32,
-            height: bounds_height,
-        },
-        background: Background::Color(style.filled_color),
-        border_radius: style.back_border_radius,
-        border_width: style.back_border_width,
-        border_color: Color::TRANSPARENT,
-    };
-
-    let handle = Primitive::Quad {
-        bounds: Rectangle {
-            x: bounds_x + handle_offset,
-            y: bounds_y,
-            width: handle_width + twice_border_width,
-            height: bounds_height,
-        },
-        background: Background::Color(style.handle_color),
-        border_radius: style.back_border_radius,
-        border_width: style.back_border_width,
-        border_color: Color::TRANSPARENT,
-    };
-
-    Primitive::Group {
-        primitives: vec![
-            text_marks,
-            empty_rect,
-            tick_marks,
-            filled_rect,
-            mod_range_line,
-            handle,
-        ],
-    }
-}
-
-fn draw_rect_bipolar_style(
-    normal: Normal,
-    rail_y: f32,
-    bounds_x: f32,
-    bounds_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
-    tick_marks: Option<&tick_marks::Group>,
-    text_marks: Option<&text_marks::Group>,
-    tick_mark_style: &Option<TickMarkStyle>,
-    text_mark_style: &Option<crate::style::text_marks::Style>,
-    style: &RectBipolarStyle,
-    mod_range_line: Primitive,
-) -> Primitive {
-    let handle_width = style.handle_width as f32;
-
-    let bar_x = (bounds_x + (handle_width / 2.0)).floor();
-    let bar_width = bounds_width - handle_width;
-
-    let tick_marks: Primitive = {
-        if let Some(tick_marks) = tick_marks {
-            if let Some(style) = tick_mark_style {
-                draw_tick_marks(
-                    rail_y,
-                    bar_x,
-                    bar_width,
-                    bounds_height,
-                    tick_marks,
-                    &style,
-                )
-            } else {
-                Primitive::None
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    let text_marks: Primitive = {
-        if let Some(text_marks) = text_marks {
-            if let Some(style) = text_mark_style {
-                text_marks_render::draw_horizontal_text_marks(
-                    &Rectangle {
-                        x: bar_x,
-                        y: bounds_y,
-                        width: bar_width,
-                        height: bounds_height,
-                    },
-                    &text_marks,
-                    style,
-                    false,
-                )
-            } else {
-                Primitive::None
-            }
-        } else {
-            Primitive::None
-        }
-    };
-
-    let border_width = style.back_border_width as f32;
-    let twice_border_width = border_width * 2.0;
-
-    let empty_rect = Primitive::Quad {
-        bounds: Rectangle {
-            x: bounds_x,
-            y: bounds_y,
-            width: bounds_width,
-            height: bounds_height,
-        },
-        background: Background::Color(style.back_color),
-        border_radius: style.back_border_radius,
-        border_width: style.back_border_width,
-        border_color: style.back_border_color,
-    };
-
-    let half_bounds_width = (bounds_width / 2.0).floor();
-
-    let handle_offset = normal
-        .scale(bounds_width - twice_border_width - handle_width)
-        .floor();
-
-    if normal.value() > 0.499 && normal.value() < 0.501 {
-        let handle = Primitive::Quad {
-            bounds: Rectangle {
-                x: bounds_x + handle_offset,
-                y: bounds_y,
-                width: handle_width + twice_border_width,
-                height: bounds_height,
-            },
-            background: Background::Color(style.handle_center_color),
-            border_radius: style.back_border_radius,
-            border_width: style.back_border_width,
-            border_color: Color::TRANSPARENT,
-        };
-
-        Primitive::Group {
-            primitives: vec![empty_rect, tick_marks, mod_range_line, handle],
-        }
-    } else if normal.value() < 0.5 {
-        let filled_rect_offset =
-            handle_offset + handle_width + style.handle_filled_gap as f32;
-
-        let filled_rect = Primitive::Quad {
-            bounds: Rectangle {
-                x: bounds_x + filled_rect_offset,
-                y: bounds_y,
-                width: half_bounds_width - filled_rect_offset
-                    + twice_border_width,
-                height: bounds_height,
-            },
-            background: Background::Color(style.left_filled_color),
-            border_radius: style.back_border_radius,
-            border_width: style.back_border_width,
-            border_color: Color::TRANSPARENT,
-        };
-
-        let handle = Primitive::Quad {
-            bounds: Rectangle {
-                x: bounds_x + handle_offset,
-                y: bounds_y,
-                width: handle_width + twice_border_width,
-                height: bounds_height,
-            },
-            background: Background::Color(style.handle_left_color),
-            border_radius: style.back_border_radius,
-            border_width: style.back_border_width,
-            border_color: Color::TRANSPARENT,
-        };
-
-        Primitive::Group {
-            primitives: vec![
-                empty_rect,
-                tick_marks,
-                filled_rect,
-                mod_range_line,
-                handle,
-            ],
         }
     } else {
-        let filled_rect_offset = half_bounds_width;
-        let filled_rect = Primitive::Quad {
-            bounds: Rectangle {
-                x: bounds_x + filled_rect_offset,
-                y: bounds_y,
-                width: handle_offset - filled_rect_offset + twice_border_width
-                    - style.handle_filled_gap as f32,
-                height: bounds_height,
-            },
-            background: Background::Color(style.right_filled_color),
-            border_radius: style.back_border_radius,
-            border_width: style.back_border_width,
-            border_color: Color::TRANSPARENT,
-        };
+        Primitive::None
+    };
 
-        let handle = Primitive::Quad {
-            bounds: Rectangle {
-                x: bounds_x + handle_offset,
-                y: bounds_y,
-                width: handle_width + twice_border_width,
-                height: bounds_height,
-            },
-            background: Background::Color(style.handle_right_color),
-            border_radius: style.back_border_radius,
-            border_width: style.back_border_width,
-            border_color: Color::TRANSPARENT,
-        };
+    Primitive::Group {
+        primitives: vec![back, range],
+    }
+}
 
-        Primitive::Group {
-            primitives: vec![
-                text_marks,
-                empty_rect,
-                tick_marks,
-                filled_rect,
-                mod_range_line,
-                handle,
-            ],
+fn draw_handle_layer(
+    handle_layer: &HandleLayer,
+    handle_bounds: &Rectangle,
+) -> Primitive {
+    match handle_layer {
+        HandleLayer::None => Primitive::None,
+        HandleLayer::Rectangle(rectangle_layer) => {
+            let width = if let Some(width) = rectangle_layer.width {
+                f32::from(width)
+            } else {
+                handle_bounds.width
+            };
+
+            let height = if let Some(height) = rectangle_layer.height {
+                f32::from(height)
+            } else {
+                handle_bounds.height
+            };
+
+            Primitive::Quad {
+                bounds: Rectangle {
+                    x: (handle_bounds.x
+                        + rectangle_layer.offset.x
+                        + ((handle_bounds.width - width) / 2.0))
+                        .round(),
+                    y: (handle_bounds.y
+                        + rectangle_layer.offset.y
+                        + ((handle_bounds.height - height) / 2.0))
+                        .round(),
+                    width,
+                    height,
+                },
+                background: Background::Color(rectangle_layer.color),
+                border_radius: rectangle_layer.border_radius,
+                border_width: rectangle_layer.border_width,
+                border_color: rectangle_layer.border_color,
+            }
+        }
+        HandleLayer::Circle(circle_layer) => {
+            let diameter = if let Some(diameter) = circle_layer.diameter {
+                f32::from(diameter)
+            } else {
+                handle_bounds.width
+            };
+
+            Primitive::Quad {
+                bounds: Rectangle {
+                    x: (handle_bounds.x
+                        + circle_layer.offset.x
+                        + ((handle_bounds.width - diameter) / 2.0))
+                        .round(),
+                    y: (handle_bounds.y
+                        + circle_layer.offset.y
+                        + ((handle_bounds.height - diameter) / 2.0))
+                        .round(),
+                    width: diameter,
+                    height: diameter,
+                },
+                background: Background::Color(circle_layer.color),
+                border_radius: (diameter / 2.0) as u16,
+                border_width: circle_layer.border_width,
+                border_color: circle_layer.border_color,
+            }
+        }
+        HandleLayer::Texture(texture_layer) => {
+            let width = if let Some(width) = texture_layer.width {
+                f32::from(width)
+            } else {
+                handle_bounds.width
+            };
+
+            let height = if let Some(height) = texture_layer.height {
+                f32::from(height)
+            } else {
+                handle_bounds.height
+            };
+
+            Primitive::Image {
+                handle: texture_layer.image_handle.clone(),
+                /// The bounds of the image
+                bounds: Rectangle {
+                    x: (handle_bounds.x
+                        + texture_layer.offset.x
+                        + ((handle_bounds.width - width) / 2.0))
+                        .round(),
+                    y: (handle_bounds.y
+                        + texture_layer.offset.y
+                        + ((handle_bounds.height - height) / 2.0))
+                        .round(),
+                    width,
+                    height,
+                },
+            }
         }
     }
-}
-
-fn draw_rails(
-    rail_y: f32,
-    bounds_x: f32,
-    bounds_width: f32,
-    top_rail_width: u16,
-    bottom_rail_width: u16,
-    top_rail_color: &Color,
-    bottom_rail_color: &Color,
-) -> (Primitive, Primitive) {
-    let top_rail_width = top_rail_width as f32;
-    let bottom_rail_width = bottom_rail_width as f32;
-    let full_rail_width = top_rail_width + bottom_rail_width;
-    let half_full_rail_width = (full_rail_width / 2.0).floor();
-
-    (
-        Primitive::Quad {
-            bounds: Rectangle {
-                x: bounds_x,
-                y: rail_y - half_full_rail_width,
-                width: bounds_width,
-                height: top_rail_width,
-            },
-            background: Background::Color(*top_rail_color),
-            border_radius: 0,
-            border_width: 0,
-            border_color: Color::TRANSPARENT,
-        },
-        Primitive::Quad {
-            bounds: Rectangle {
-                x: bounds_x,
-                y: rail_y - half_full_rail_width + top_rail_width,
-                width: bounds_width,
-                height: bottom_rail_width,
-            },
-            background: Background::Color(*bottom_rail_color),
-            border_radius: 0,
-            border_width: 0,
-            border_color: Color::TRANSPARENT,
-        },
-    )
-}
-
-fn draw_tick_mark_tier_merged(
-    primitives: &mut Vec<Primitive>,
-    tick_mark_positions: &Vec<Normal>,
-    width: f32,
-    length_scale: f32,
-    color: &Color,
-    bounds_x: f32,
-    rail_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
-) {
-    let length = (length_scale * bounds_height).floor();
-    let color = Background::Color(*color);
-    let start_x = bounds_x - (width / 2.0);
-    let y = (rail_y - (length / 2.0)).floor();
-
-    for position in tick_mark_positions.iter() {
-        let x = (start_x + position.scale(bounds_width)).floor();
-
-        primitives.push(Primitive::Quad {
-            bounds: Rectangle {
-                x,
-                y,
-                width,
-                height: length,
-            },
-            background: color,
-            border_radius: 0,
-            border_width: 0,
-            border_color: Color::TRANSPARENT,
-        });
-    }
-}
-
-fn draw_tick_mark_tier(
-    primitives: &mut Vec<Primitive>,
-    tick_mark_positions: &Vec<Normal>,
-    width: f32,
-    length_scale: f32,
-    color: &Color,
-    bounds_x: f32,
-    rail_y: f32,
-    bounds_width: f32,
-    bounds_height: f32,
-    center_offset: f32,
-) {
-    let length = (length_scale * bounds_height).floor();
-    let half_length = (length / 2.0).floor();
-    let color = Background::Color(*color);
-    let start_x = bounds_x - (width / 2.0);
-
-    let top_y = rail_y - center_offset - half_length;
-    let bottom_y = rail_y + center_offset;
-
-    for position in tick_mark_positions.iter() {
-        let x = (start_x + position.scale(bounds_width)).floor();
-
-        primitives.push(Primitive::Quad {
-            bounds: Rectangle {
-                x,
-                y: top_y,
-                width: width,
-                height: half_length,
-            },
-            background: color,
-            border_radius: 0,
-            border_width: 0,
-            border_color: Color::TRANSPARENT,
-        });
-
-        primitives.push(Primitive::Quad {
-            bounds: Rectangle {
-                x,
-                y: bottom_y,
-                width: width,
-                height: half_length,
-            },
-            background: color,
-            border_radius: 0,
-            border_width: 0,
-            border_color: Color::TRANSPARENT,
-        });
-    }
-}
-
-fn draw_tick_marks(
-    rail_y: f32,
-    bounds_x: f32,
-    bounds_width: f32,
-    bounds_height: f32,
-    tick_marks: &tick_marks::Group,
-    style: &TickMarkStyle,
-) -> Primitive {
-    Primitive::None
 }

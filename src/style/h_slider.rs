@@ -1,240 +1,247 @@
 //! Various styles for the [`HSlider`] widget
 //!
-//! [`HSlider`]: ../native/h_slider/struct.HSlider.html
+//! [`HSlider`]: ../../native/h_slider/struct.HSlider.html
 
-use iced::{Color, Point};
-use iced_native::image;
+use iced::Color;
+use iced_native::{image, Align, Point};
 
-use crate::style::{default_colors, text_marks};
-use crate::TexturePadding;
+use crate::core::Normal;
+use crate::style::{default_colors, text_marks, tick_marks};
 
 /// The appearance of an [`HSlider`].
 ///
 /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
 #[derive(Debug, Clone)]
-pub enum Style {
-    /// uses an image texture for the handle
-    Texture(TextureStyle),
-    /// modeled after hardware sliders
-    Classic(ClassicStyle),
-    /// a modern style with a line inside a filled rectangle
-    Rect(RectStyle),
-    /// same as `Rect` but can have different colors for left,
-    /// right, and center positions
-    RectBipolar(RectBipolarStyle),
-}
-
-/// A [`Style`] for an [`HSlider`] that uses an image texture for the handle
-///
-/// [`Style`]: enum.Style.html
-/// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-/// [`Handle`]: https://docs.rs/iced/0.1.1/iced/widget/image/struct.Handle.html
-#[derive(Debug, Clone)]
-pub struct TextureStyle {
-    /// colors of the top and bottom of the rail
-    pub rail_colors: (Color, Color),
-    /// width (thickness) of the top and bottom of the rail
-    pub rail_widths: (u16, u16),
-    /// the [`Handle`] to the image texture
-    pub texture: image::Handle,
-    /// the width of the handle, not including padding
+pub struct Style {
+    /// A rail that the handle slides in.
+    pub rail: Rail,
+    /// A rectangle filled from the starting value to the center
+    /// of the handle.
+    pub value_fill: Option<ValueFill>,
+    /// The width of the handle in pixels.
     pub handle_width: u16,
-    /// the texture padding around the handle bounding
-    /// rectangle. This is useful when the texture is of a glowing handle or has
-    /// a drop shadow, etc.
-    pub texture_padding: Option<TexturePadding>,
+    /// The bottom layer of the handle.
+    pub handle_bottom: HandleLayer,
+    /// The top layer of the handle.
+    pub handle_top: HandleLayer,
 }
 
-/// A classic [`Style`] for an [`HSlider`], modeled after hardware sliders
-///
-/// [`Style`]: enum.Style.html
-/// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-/// [`ClassicHandle`]: struct.ClassicHandle.html
+/// Classic rail style
 #[derive(Debug, Clone)]
-pub struct ClassicStyle {
-    /// colors of the top and bottom of the rail
-    pub rail_colors: (Color, Color),
-    /// width (thickness) of the top and bottom of the rail
-    pub rail_widths: (u16, u16),
-    /// a `ClassicHandle` defining the style of the handle
-    pub handle: ClassicHandle,
+pub struct ClassicRail {
+    /// Colors of the top and bottom of the rail.
+    pub colors: (Color, Color),
+    /// Width (thickness) of the top and bottom of the rail in pixels.
+    pub widths: (u16, u16),
+    /// The spacing from the ends of the rail to the left and right of
+    /// the widget in pixels.
+    pub edge_padding: u16,
 }
 
-/// The [`ClassicStyle`] appearance of the handle of an [`HSlider`]
-///
-/// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-/// [`ClassicStyle`]: struct.ClassicStyle.html
+/// Background rectangle rail style
 #[derive(Debug, Clone)]
-pub struct ClassicHandle {
-    /// background color
+pub struct RectangleRail {
+    /// * Color of the rectangle.
     pub color: Color,
-    /// width of the handle
-    pub width: u16,
-    /// the width (thickness) of the middle notch
-    pub notch_width: u16,
-    /// color of the middle notch
-    pub notch_color: Color,
-    /// radius of the background rectangle
-    pub border_radius: u16,
-    /// width of the background rectangle
-    pub border_width: u16,
-    /// color of the background rectangle border
+    /// * Color of the border.
     pub border_color: Color,
+    /// * Width of the border.
+    pub border_width: u16,
+    /// * Radius of the corners.
+    pub border_radius: u16,
+    /// Height of the rectangle in pixels. Set to `None` to use the
+    /// height of the widget.
+    pub height: Option<u16>,
+    /// The spacing from the ends of the rail to the left and right of
+    /// the widget in pixels.
+    pub edge_padding: u16,
 }
 
-/// A modern [`Style`] for an [`HSlider`]. It is composed of a background
-/// rectangle and a rectangular handle.
+/// Texture rail style
+#[derive(Debug, Clone)]
+pub struct TextureRail {
+    /// The image handle.
+    pub image_handle: image::Handle,
+    /// Width of the texture in pixels. Set to `None` to use the
+    /// width of the widget.
+    pub width: Option<u16>,
+    /// Height of the texture in pixels. Set to `None` to use the
+    /// height of the widget.
+    pub height: Option<u16>,
+    /// The spacing from the ends of the rail to the left and right of
+    /// the widget in pixels. This is only effective when `width` is `None`.
+    pub edge_padding: u16,
+    /// Offset of the texture in pixels.
+    pub offset: Point,
+}
+
+/// The appearance of the rail of an [`HSlider`].
 ///
-/// [`Style`]: enum.Style.html
 /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-#[derive(Debug, Clone, Copy)]
-pub struct RectStyle {
-    /// color of the background rectangle
-    pub back_color: Color,
-    /// width of the background rectangle border
-    pub back_border_width: u16,
-    /// radius of the background rectangle
-    pub back_border_radius: u16,
-    /// color of the background rectangle border
-    pub back_border_color: Color,
-    /// color of a filled portion in the background rectangle
-    pub filled_color: Color,
-    /// color of the handle rectangle
-    pub handle_color: Color,
-    /// width of the handle rectangle
-    pub handle_width: u16,
-    /// width of the gap between the handle and the filled
-    /// portion of the background rectangle
-    pub handle_filled_gap: u16,
+#[derive(Debug, Clone)]
+pub enum Rail {
+    /// No Rail
+    None,
+    /// Classic rail
+    Classic(ClassicRail),
+    /// A background rectangle
+    Rectangle(RectangleRail),
+    /// Textured rail
+    Texture(TextureRail),
 }
 
-/// A modern [`Style`] for an [`HSlider`]. It is composed of a background
-/// rectangle and a rectangular handle. It has different colors for left, right,
-/// and center values.
+/// Where to start the fill from.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ValueFillMode {
+    /// Start from the left side
+    FromLeft {
+        /// The spacing from the end of the value fill to the left of
+        /// the widget in pixels.
+        padding: u16,
+    },
+    /// Start from the right side
+    FromRight {
+        /// The spacing from the end of the value fill to the right of
+        /// the widget in pixels.
+        padding: u16,
+    },
+    /// Start from the center
+    FromCenter,
+}
+
+/// A rectangle filled from the starting value to the center
+/// of the handle.
+#[derive(Debug, Clone)]
+pub struct ValueFill {
+    /// Color of the value fill rectangle.
+    pub color: Color,
+    /// Width of the border.
+    pub border_width: u16,
+    /// Radius of the border.
+    pub border_radius: u16,
+    /// Color of the border.
+    pub border_color: Color,
+    /// The spacing in pixels between the center of the handle
+    /// and the value fill rectangle.
+    pub handle_spacing: u16,
+    /// The height (thickness) of the value fill rectangle. Set to
+    /// `None` to use the full height of the widget.
+    pub height: Option<u16>,
+    /// Where to start the fill from.
+    pub fill_mode: ValueFillMode,
+    /// The vertical offset of the value fill rectangle in pixels.
+    pub v_offset: u16,
+}
+
+/// Rectangle handle layer
+#[derive(Debug, Clone)]
+pub struct RectangleLayer {
+    /// Color of the rectangle.
+    pub color: Color,
+    /// Color of the border.
+    pub border_color: Color,
+    /// Width of the border.
+    pub border_width: u16,
+    /// Radius of the corners.
+    pub border_radius: u16,
+    /// Width of the rectangle in pixels. Set to `None` to use the
+    /// width of the handle.
+    pub width: Option<u16>,
+    /// Height of the rectangle in pixels. Set to `None` to use the
+    /// height of the widget.
+    pub height: Option<u16>,
+    /// Offset from the center of the handle in pixels.
+    pub offset: Point,
+}
+
+/// Circle handler layer
+#[derive(Debug, Clone)]
+pub struct CircleLayer {
+    /// Color of the circle.
+    pub color: Color,
+    /// Color of the border.
+    pub border_color: Color,
+    /// Width of the border.
+    pub border_width: u16,
+    /// Diameter of the circle in pixels. Set to `None` to use the
+    /// height of the widget.
+    pub diameter: Option<u16>,
+    /// Offset from the center of the handle in pixels.
+    pub offset: Point,
+}
+
+/// Texture handler layer
+#[derive(Debug, Clone)]
+pub struct TextureLayer {
+    /// The handle to the texture.
+    pub image_handle: image::Handle,
+    /// Width of the texture in pixels. Set to `None` to use the
+    /// width of the handle.
+    pub width: Option<u16>,
+    /// Height of the texture in pixels. Set to `None` to use the
+    /// height of the widget.
+    pub height: Option<u16>,
+    /// Offset from the center of the handle in pixels.
+    pub offset: Point,
+}
+
+/// The appearance of a handle layer in an [`HSlider`].
 ///
-/// [`Style`]: enum.Style.html
 /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-#[derive(Debug, Clone, Copy)]
-pub struct RectBipolarStyle {
-    /// color of the background rectangle
-    pub back_color: Color,
-    /// width of the background rectangle border
-    pub back_border_width: u16,
-    /// radius of the background rectangle
-    pub back_border_radius: u16,
-    /// color of the background rectangle border
-    pub back_border_color: Color,
-    /// color of a filled portion in the background
-    /// rectangle on the left side of the center
-    pub left_filled_color: Color,
-    /// color of a filled portion in the background
-    /// rectangle on the right side of the center
-    pub right_filled_color: Color,
-    /// color of the handle rectangle when it is on the
-    /// left side of the center
-    pub handle_left_color: Color,
-    /// color of the handle rectangle when it is on the
-    /// right side of the center
-    pub handle_right_color: Color,
-    /// color of the handle rectangle when it is in the center
-    pub handle_center_color: Color,
-    /// width of the handle rectangle
-    pub handle_width: u16,
-    /// width of the gap between the handle and the filled
-    /// portion of the background rectangle
-    pub handle_filled_gap: u16,
+#[derive(Debug, Clone)]
+pub enum HandleLayer {
+    /// No layer
+    None,
+    /// A rectangle
+    Rectangle(RectangleLayer),
+    /// A circle
+    Circle(CircleLayer),
+    /// A texture
+    Texture(TextureLayer),
+    // TODO: Triangle and hexagon.
 }
 
-/// The style of a [`TickMarkGroup`] for an [`HSlider`]
+/// The placement of a modulation range indicator in an [`HSlider`]
 ///
-/// [`TickMarkGroup`]: ../../core/tick_marks/struct.TickMarkGroup.html
 /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-#[derive(Debug, Copy, Clone)]
-pub struct TickMarkStyle {
-    /// The length of a tier 1 tick mark relative to the length of the `HSlider`
-    pub length_scale_tier_1: f32,
-    /// The length of a tier 2 tick mark relative to the length of the `HSlider`
-    pub length_scale_tier_2: f32,
-    /// The length of a tier 3 tick mark relative to the length of the `HSlider`
-    pub length_scale_tier_3: f32,
-
-    /// The width (thickness) of a tier 1 tick mark
-    pub width_tier_1: u16,
-    /// The width (thickness) of a tier 2 tick mark
-    pub width_tier_2: u16,
-    /// The width (thickness) of a tier 3 tick mark
-    pub width_tier_3: u16,
-
-    /// The color of a tier 1 tick mark
-    pub color_tier_1: Color,
-    /// The color of a tier 2 tick mark
-    pub color_tier_2: Color,
-    /// The color of a tier 3 tick mark
-    pub color_tier_3: Color,
-
-    /// The vertical distance from the center rail to a tick mark. Setting this
-    /// to `0` will cause each tick mark to be a single continous line going
-    /// through the the rail, as apposed to a line above and a line below the
-    /// rail.
-    pub center_offset: u16,
-}
-
-impl std::default::Default for TickMarkStyle {
-    fn default() -> Self {
-        Self {
-            length_scale_tier_1: 1.65,
-            length_scale_tier_2: 1.55,
-            length_scale_tier_3: 1.4,
-
-            width_tier_1: 2,
-            width_tier_2: 1,
-            width_tier_3: 1,
-
-            color_tier_1: default_colors::TICK_TIER_1,
-            color_tier_2: default_colors::TICK_TIER_2,
-            color_tier_3: default_colors::TICK_TIER_3,
-
-            center_offset: 0,
-        }
-    }
-}
-
-/// The position of a [`ModRangeStyle`] ring for an [`HSlider`]
-///
-/// [`ModRangeStyle`]: struct.ModRangeStyle.html
-/// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum ModRangePlacement {
-    /// In the center of the widget
+    /// In the center of the widget.
     Center,
-    /// Above the widget
-    Top,
-    /// Below the widget
+    /// The bottom of the widget.
     Bottom,
+    /// The top of the widget.
+    Top,
 }
 
-/// A style for a [`ModulationRange`] ring for an [`HSlider`]
+/// The appearance of a modulation range indicator in an [`HSlider`]
 ///
-/// [`ModulationRange`]: ../../core/struct.ModulationRange.html
 /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct ModRangeStyle {
-    /// The width of the line
-    pub width: u16,
-    /// The offset of the line from the edge of the widget.
-    /// If `placement` is `ModRangePlacement::center`, then
-    /// this will be the padding from the edge of the widget.
-    pub offset: i32,
-    /// The placement of the line relative to the widget
-    pub placement: ModRangePlacement,
-    /// The color of an empty portion of the line.
-    /// Set to `None` for no empty portion.
-    pub empty_color: Option<Color>,
-    /// The color of a filled portion of the line.
+    /// The color of the background rectangle. Set to `None` for no
+    /// background rectangle.
+    pub back_color: Option<Color>,
+    /// The border width of the background rectangle.
+    pub border_width: u16,
+    /// The border radius of the background rectangle.
+    pub border_radius: u16,
+    /// The border color of the background rectangle.
+    pub border_color: Color,
+    /// The color of a filled portion.
     pub filled_color: Color,
-    /// The color of a filled portion of the ring when `end` is less than
-    /// `start`.
-    pub filled_inverse_color: Color,
+    /// The color of a filled portion when the range is inversed.
+    pub filled_color_inv: Color,
+    /// The height of the rectangle in pixels. Set this to `None` to use
+    /// the height of the widget.
+    pub height: Option<u16>,
+    /// The placement relative to the widget.
+    pub placement: ModRangePlacement,
+    /// The spacing from the end of the rectangle to the left and right of
+    /// the widget in pixels.
+    pub edge_padding: u16,
+    /// The offset in pixels.
+    pub offset: Point,
 }
 
 /// A set of rules that dictate the style of an [`HSlider`].
@@ -243,32 +250,45 @@ pub struct ModRangeStyle {
 pub trait StyleSheet {
     /// Produces the style of an active [`HSlider`].
     ///
+    /// * `value` - The current normalized value. This can be use to
+    /// change the style based on the value of the slider.
+    ///
     /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-    fn active(&self) -> Style;
+    fn active(&self, value: Normal) -> Style;
 
     /// Produces the style of a hovered [`HSlider`].
     ///
+    /// * `value` - The current normalized value. This can be use to
+    /// change the style based on the value of the slider.
+    ///
     /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-    fn hovered(&self) -> Style;
+    fn hovered(&self, value: Normal) -> Style;
 
     /// Produces the style of an [`HSlider`] that is being dragged.
     ///
+    /// * `value` - The current normalized value. This can be use to
+    /// change the style based on the value of the slider.
+    ///
     /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-    fn dragging(&self) -> Style;
+    fn dragging(&self, value: Normal) -> Style;
 
-    /// The style of a [`TickMarkGroup`] for an [`HSlider`]
+    /// The style of tick marks for an [`HSlider`]
     ///
-    /// For no tick marks, don't override this or set this to return `None`.
+    /// For no tick marks, set this to return `None`.
     ///
-    /// [`TickMarkGroup`]: ../../core/tick_marks/struct.TickMarkGroup.html
     /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-    fn tick_mark_style(&self) -> Option<TickMarkStyle> {
-        None
+    fn tick_marks_style(
+        &self,
+    ) -> Option<(tick_marks::Style, tick_marks::Placement)> {
+        Some((
+            tick_marks::Style::default(),
+            tick_marks::Placement::default(),
+        ))
     }
 
-    /// The style of an [`ModulationRange`] line for an [`HSlider`]
+    /// The style of an [`ModulationRange`] for an [`HSlider`]
     ///
-    /// For no modulation range line, don't override this or set this to return `None`.
+    /// For no modulation range, don't override this or set this to return `None`.
     ///
     /// [`ModulationRange`]: ../../core/struct.ModulationRange.html
     /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
@@ -276,74 +296,119 @@ pub trait StyleSheet {
         None
     }
 
-    /// The style of a [`TextMarkGroup`] for an [`HSlider`]
+    /// The style of a second [`ModulationRange`] for an [`HSlider`]
     ///
-    /// For no text marks, don't override this or set this to return `None`.
+    /// For no second modulation range, don't override this or set this to return `None`.
     ///
-    /// [`TextMarkGroup`]: ../../core/text_marks/struct.TextMarkGroup.html
+    /// [`ModulationRange`]: ../../core/struct.ModulationRange.html
     /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
-    fn text_mark_style(&self) -> Option<text_marks::Style> {
+    fn mod_range_style_2(&self) -> Option<ModRangeStyle> {
         None
+    }
+
+    /// The style of text marks for an [`HSlider`]
+    ///
+    /// For no text marks, set this to return `None`.
+    ///
+    /// [`HSlider`]: ../../native/h_slider/struct.HSlider.html
+    fn text_marks_style(&self) -> Option<text_marks::Style> {
+        Some(text_marks::Style::default())
     }
 }
 
 struct Default;
 
+impl Default {
+    fn handle_bottom() -> RectangleLayer {
+        RectangleLayer {
+            color: default_colors::LIGHT_BACK,
+            border_color: default_colors::BORDER,
+            border_width: 1,
+            border_radius: 2,
+            width: None,
+            height: None,
+            offset: Point::ORIGIN,
+        }
+    }
+}
+
 impl StyleSheet for Default {
-    fn active(&self) -> Style {
-        Style::Classic(ClassicStyle {
-            rail_colors: default_colors::SLIDER_RAIL,
-            rail_widths: (1, 1),
-            handle: ClassicHandle {
-                color: default_colors::LIGHT_BACK,
-                width: 34,
-                notch_width: 4,
-                notch_color: default_colors::BORDER,
-                border_radius: 2,
-                border_color: default_colors::BORDER,
-                border_width: 1,
+    fn active(&self, _value: Normal) -> Style {
+        Style {
+            rail: Rail::Classic(ClassicRail {
+                colors: default_colors::SLIDER_RAIL,
+                widths: (1, 1),
+                edge_padding: 12,
+            }),
+            value_fill: None,
+            handle_width: 30,
+            handle_bottom: HandleLayer::Rectangle(Self::handle_bottom()),
+            // The notch in the middle of the handle.
+            handle_top: HandleLayer::Rectangle(RectangleLayer {
+                color: default_colors::BORDER,
+                border_color: Color::TRANSPARENT,
+                border_width: 0,
+                border_radius: 0,
+                width: Some(4),
+                height: None,
+                offset: Point::ORIGIN,
+            }),
+        }
+    }
+
+    fn hovered(&self, value: Normal) -> Style {
+        let active = self.active(value);
+        Style {
+            handle_bottom: HandleLayer::Rectangle(RectangleLayer {
+                color: default_colors::LIGHT_BACK_HOVER,
+                ..Self::handle_bottom()
+            }),
+            ..active
+        }
+    }
+
+    fn dragging(&self, value: Normal) -> Style {
+        let active = self.active(value);
+        Style {
+            handle_bottom: HandleLayer::Rectangle(RectangleLayer {
+                color: default_colors::LIGHT_BACK_DRAG,
+                ..Self::handle_bottom()
+            }),
+            ..active
+        }
+    }
+
+    fn tick_marks_style(
+        &self,
+    ) -> Option<(tick_marks::Style, tick_marks::Placement)> {
+        Some((
+            tick_marks::Style {
+                tier_1: Some(tick_marks::Shape::Line {
+                    length: 24,
+                    width: 2,
+                    color: default_colors::TICK_TIER_1,
+                }),
+                tier_2: Some(tick_marks::Shape::Line {
+                    length: 22,
+                    width: 1,
+                    color: default_colors::TICK_TIER_2,
+                }),
+                tier_3: Some(tick_marks::Shape::Line {
+                    length: 18,
+                    width: 1,
+                    color: default_colors::TICK_TIER_3,
+                }),
             },
-        })
+            tick_marks::Placement::Center { fill_length: false },
+        ))
     }
 
-    fn hovered(&self) -> Style {
-        let active = self.active();
-        if let Style::Classic(active) = self.active() {
-            Style::Classic(ClassicStyle {
-                handle: ClassicHandle {
-                    color: default_colors::LIGHT_BACK_HOVER,
-                    ..active.handle
-                },
-                ..active
-            })
-        } else {
-            active
-        }
-    }
-
-    fn dragging(&self) -> Style {
-        let active = self.active();
-        if let Style::Classic(active) = self.active() {
-            Style::Classic(ClassicStyle {
-                handle: ClassicHandle {
-                    color: default_colors::LIGHT_BACK_DRAG,
-                    ..active.handle
-                },
-                ..active
-            })
-        } else {
-            active
-        }
-    }
-
-    fn tick_mark_style(&self) -> Option<TickMarkStyle> {
-        Some(TickMarkStyle::default())
-    }
-
-    fn text_mark_style(&self) -> Option<text_marks::Style> {
+    fn text_marks_style(&self) -> Option<text_marks::Style> {
         Some(text_marks::Style {
-            placement: text_marks::Placement::RightOrBottom { inside: false },
-            offset: Point { x: 5.0, y: 0.0 },
+            placement: text_marks::Placement::Center {
+                align: Align::Start,
+            },
+            offset: Point { x: 0.0, y: 16.0 },
             ..text_marks::Style::default()
         })
     }
