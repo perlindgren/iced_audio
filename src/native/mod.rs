@@ -4,6 +4,7 @@ pub mod h_slider;
 pub mod knob;
 pub mod mod_range_input;
 pub mod ramp;
+pub mod scope;
 pub mod text_marks;
 pub mod tick_marks;
 pub mod v_slider;
@@ -17,6 +18,8 @@ pub use knob::Knob;
 pub use mod_range_input::ModRangeInput;
 #[doc(no_inline)]
 pub use ramp::Ramp;
+#[doc(no_inline)]
+pub use scope::Scope;
 #[doc(no_inline)]
 pub use v_slider::VSlider;
 #[doc(no_inline)]

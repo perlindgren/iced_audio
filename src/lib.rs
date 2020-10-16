@@ -15,7 +15,7 @@
 //! # Simple Usage Example
 //!
 //! This crate assumes you know the basics of how to use [`Iced`]. If you
-//! haven't alreay, please check it out [`here`].
+//! haven't already, please check it out [`here`].
 //!
 //! ```
 // Import iced modules.
@@ -211,14 +211,14 @@ pub use crate::core::*;
 mod platform {
     #[doc(no_inline)]
     pub use crate::graphics::{
-        h_slider, knob, mod_range_input, ramp, text_marks, tick_marks,
+        h_slider, knob, mod_range_input, ramp, scope, text_marks, tick_marks,
         v_slider, xy_pad,
     };
 
     #[doc(no_inline)]
     pub use {
         h_slider::HSlider, knob::Knob, mod_range_input::ModRangeInput,
-        ramp::Ramp, v_slider::VSlider, xy_pad::XYPad,
+        ramp::Ramp, scope::Scope, v_slider::VSlider, xy_pad::XYPad,
     };
 }
 
