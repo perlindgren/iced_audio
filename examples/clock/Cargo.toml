@@ -1,0 +1,12 @@
+[package]
+name = "clock"
+version = "0.1.0"
+authors = ["Héctor Ramón Jiménez <hector0193@gmail.com>"]
+edition = "2018"
+publish = false
+
+[dependencies]
+# iced = { path = "../..", features = ["canvas", "tokio", "debug"] }
+iced = { git = "https://github.com/hecrj/iced", branch = "master", features=["canvas", "tokio"] }
+
+chrono = "0.4"

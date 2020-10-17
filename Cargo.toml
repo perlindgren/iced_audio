@@ -19,7 +19,8 @@ maintenance = { status = "actively-developed" }
 members = [
     "examples/simple",
     "examples/inputs_tour",
-    "examples/scope",    
+    "examples/scope",  
+    "examples/clock",  
 ]
 
 # See more keys and their definitions at
